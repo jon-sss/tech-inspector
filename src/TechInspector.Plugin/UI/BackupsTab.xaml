@@ -1,0 +1,179 @@
+<UserControl x:Class="TechInspector.Plugin.UI.BackupsTab"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:styles="clr-namespace:SimHub.Plugins.Styles;assembly=SimHub.Plugins"
+             xmlns:iconpacks="clr-namespace:MahApps.Metro.IconPacks;assembly=MahApps.Metro.IconPacks.Material"
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+             xmlns:ui="clr-namespace:TechInspector.Plugin.UI">
+    <UserControl.Resources>
+        <ui:BoolToVisibility x:Key="Visible" />
+        <ui:BoolToVisibility x:Key="Hidden" Invert="True" />
+        <ui:BoolToVisibility x:Key="VisibleKeepSpace" KeepSpace="True" />
+        <Style x:Key="Muted" TargetType="TextBlock">
+            <Setter Property="Opacity" Value="0.62" />
+            <Setter Property="FontSize" Value="12.5" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+        <Style x:Key="SectionTitle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="Margin" Value="2,22,0,8" />
+        </Style>
+        <!-- Same neutral overlays as the Overview, so both SimHub themes work. -->
+        <Style x:Key="Card" TargetType="Border">
+            <Setter Property="Background" Value="#1A808080" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Padding" Value="14,10" />
+            <Setter Property="Margin" Value="0,0,0,6" />
+        </Style>
+        <Style x:Key="Nested" TargetType="Border">
+            <Setter Property="Background" Value="#14000000" />
+            <Setter Property="CornerRadius" Value="3" />
+            <Setter Property="Padding" Value="12,8" />
+            <Setter Property="Margin" Value="0,0,0,4" />
+        </Style>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="0,4,14,24">
+
+            <!-- Take one now -->
+            <DockPanel>
+                <styles:SHLinkButtonSmall DockPanel.Dock="Right" Content="Open backups folder" Click="OpenFolder_Click" VerticalAlignment="Center" />
+                <StackPanel Orientation="Horizontal">
+                    <TextBox x:Name="NameBox" Width="320" VerticalContentAlignment="Center" MaxLength="80"
+                             mah:TextBoxHelper.Watermark="Name (optional)" mah:TextBoxHelper.ClearTextButton="True"
+                             AutomationProperties.Name="Backup name" KeyDown="NameBox_KeyDown" />
+                    <styles:SHButtonPrimary x:Name="BackUpButton" Click="BackUpNow_Click" Margin="8,0,0,0">
+                        <StackPanel Orientation="Horizontal">
+                            <iconpacks:PackIconMaterial Kind="ContentSave" Width="14" Height="14" VerticalAlignment="Center" Margin="0,0,8,0" />
+                            <TextBlock Text="Back up now" />
+                        </StackPanel>
+                    </styles:SHButtonPrimary>
+                </StackPanel>
+            </DockPanel>
+            <TextBlock x:Name="WhatText" Style="{StaticResource Muted}" Margin="2,8,0,14"
+                       Text="Saves every settings file, controls.cfg, joyCalib.yaml, camera.ini and your profiles folder." />
+
+            <!-- The last action's result -->
+            <Border x:Name="DoneCard" Style="{StaticResource Card}" Visibility="Collapsed">
+                <Grid>
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="28" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                    <iconpacks:PackIconMaterial x:Name="DoneIcon" Kind="CheckCircle" Foreground="#FF7DDC6A" Width="19" Height="19" VerticalAlignment="Center" />
+                    <StackPanel Grid.Column="1" Margin="10,0,12,0" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding Title}" FontSize="14" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding Detail}" Style="{StaticResource Muted}" Visibility="{Binding HasDetail, Converter={StaticResource Visible}}" />
+                    </StackPanel>
+                    <styles:SHLinkButtonSmall Grid.Column="2" Content="{Binding ActionText}" Click="DoneAction_Click" VerticalAlignment="Center"
+                                              Visibility="{Binding HasAction, Converter={StaticResource Visible}}" />
+                </Grid>
+            </Border>
+
+            <!-- Hand-made copies in the iRacing folder -->
+            <Border x:Name="ImportCard" Style="{StaticResource Card}" Visibility="Collapsed">
+                <Grid>
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="28" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                    <iconpacks:PackIconMaterial Kind="Information" Foreground="#FF5FA8D3" Width="19" Height="19" VerticalAlignment="Center" />
+                    <StackPanel Grid.Column="1" Margin="10,0,12,0">
+                        <TextBlock x:Name="ImportTitle" FontSize="14" TextWrapping="Wrap" />
+                        <TextBlock x:Name="ImportDetail" Style="{StaticResource Muted}" />
+                    </StackPanel>
+                    <styles:SHButtonSecondary x:Name="ImportButton" Grid.Column="2" Content="Import as backups" Click="Import_Click" VerticalAlignment="Center" />
+                </Grid>
+            </Border>
+
+            <TextBlock Style="{StaticResource SectionTitle}"><Run Text="History" /><Run x:Name="HistoryCount" FontSize="13" Foreground="Gray" /></TextBlock>
+
+            <Border x:Name="EmptyCard" Style="{StaticResource Card}" Visibility="Collapsed">
+                <TextBlock Style="{StaticResource Muted}" Text="No backups yet. One is taken before every write, or take one now." />
+            </Border>
+
+            <ItemsControl x:Name="History" Focusable="False">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type ui:BackupRow}">
+                        <Border Style="{StaticResource Card}" Padding="14,9">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="46" /><ColumnDefinition Width="150" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+
+                                <TextBlock Text="{Binding Number}" Opacity="0.55" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="1" Text="{Binding When}" ToolTip="{Binding WhenFull}" VerticalAlignment="Center" />
+                                <StackPanel Grid.Column="2" Margin="0,0,12,0" VerticalAlignment="Center">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding Title}" FontSize="13.5" TextTrimming="CharacterEllipsis" />
+                                        <iconpacks:PackIconMaterial Kind="Pin" Width="12" Height="12" Opacity="0.55" Margin="8,1,0,0" VerticalAlignment="Center"
+                                                                    Visibility="{Binding Kept, Converter={StaticResource Visible}}"
+                                                                    ToolTip="Kept until you delete it" Background="Transparent" />
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding Detail}" Style="{StaticResource Muted}" FontSize="12" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <styles:SHLinkButtonSmall Content="{Binding CompareText}" Click="Compare_Click" Margin="0,0,12,0"
+                                                              ToolTip="Shows what differs from your current files." />
+                                    <styles:SHLinkButtonSmall Content="Restore" Click="Restore_Click"
+                                                              ToolTip="Backs up your current files, then puts these back." />
+                                    <styles:SHLinkButtonSmall Content="Delete" Click="Delete_Click" Margin="12,0,0,0"
+                                                              Visibility="{Binding Kept, Converter={StaticResource VisibleKeepSpace}}"
+                                                              ToolTip="Moves this backup to the Recycle Bin." />
+                                </StackPanel>
+
+                                <!-- Compare: the files that differ, then one line for those that match -->
+                                <StackPanel Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Margin="0,10,0,2"
+                                            Visibility="{Binding CompareOpen, Converter={StaticResource Visible}}">
+                                    <ItemsControl ItemsSource="{Binding Files}" Focusable="False">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate DataType="{x:Type ui:FileDiffRow}">
+                                                <Border Style="{StaticResource Nested}">
+                                                    <StackPanel>
+                                                        <DockPanel>
+                                                            <styles:SHLinkButtonSmall DockPanel.Dock="Right" Content="Restore this file" Click="RestoreFile_Click" VerticalAlignment="Center"
+                                                                                      ToolTip="Backs up the current file, then puts this one back." />
+                                                            <TextBlock VerticalAlignment="Center">
+                                                                <Run Text="{Binding Name, Mode=OneWay}" FontSize="13.5" /><Run Text="   " /><Run Text="{Binding State, Mode=OneWay}" FontSize="12.5" Foreground="Gray" />
+                                                            </TextBlock>
+                                                        </DockPanel>
+                                                        <Grid Margin="0,8,0,0" Visibility="{Binding HasKeys, Converter={StaticResource Visible}}">
+                                                            <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                                                            <Grid Margin="0,0,0,4">
+                                                                <Grid.ColumnDefinitions><ColumnDefinition Width="280" /><ColumnDefinition Width="170" /><ColumnDefinition Width="170" /></Grid.ColumnDefinitions>
+                                                                <TextBlock Text="Setting" Style="{StaticResource Muted}" FontSize="12" />
+                                                                <TextBlock Grid.Column="1" Text="Now" Style="{StaticResource Muted}" FontSize="12" />
+                                                                <TextBlock Grid.Column="2" Text="In backup" Style="{StaticResource Muted}" FontSize="12" />
+                                                            </Grid>
+                                                            <ItemsControl Grid.Row="1" ItemsSource="{Binding Keys}" Focusable="False">
+                                                                <ItemsControl.ItemTemplate>
+                                                                    <DataTemplate DataType="{x:Type ui:KeyDiffRow}">
+                                                                        <Grid Margin="0,3" ToolTip="{Binding Tip}" Background="Transparent">
+                                                                            <Grid.ColumnDefinitions><ColumnDefinition Width="280" /><ColumnDefinition Width="170" /><ColumnDefinition Width="170" /></Grid.ColumnDefinitions>
+                                                                            <StackPanel Margin="0,0,12,0">
+                                                                                <TextBlock Text="{Binding Label}" TextTrimming="CharacterEllipsis" />
+                                                                                <TextBlock Text="{Binding Sub}" Style="{StaticResource Muted}" FontSize="11.5" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" />
+                                                                            </StackPanel>
+                                                                            <TextBlock Grid.Column="1" Text="{Binding Now}" TextTrimming="CharacterEllipsis" Margin="0,0,12,0" />
+                                                                            <TextBlock Grid.Column="2" Text="{Binding Then}" TextTrimming="CharacterEllipsis" />
+                                                                        </Grid>
+                                                                    </DataTemplate>
+                                                                </ItemsControl.ItemTemplate>
+                                                            </ItemsControl>
+                                                            <styles:SHLinkButtonSmall Grid.Row="2" Content="{Binding MoreText}" Click="KeysMore_Click" HorizontalAlignment="Left" Margin="0,4,0,0"
+                                                                                      Visibility="{Binding HasMore, Converter={StaticResource Visible}}" />
+                                                        </Grid>
+                                                    </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    <TextBlock Text="{Binding SameNote}" Style="{StaticResource Muted}" Margin="2,4,0,0"
+                                               Visibility="{Binding HasSameNote, Converter={StaticResource Visible}}" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <TextBlock x:Name="FinePrint" Style="{StaticResource Muted}" Margin="2,12,0,0" />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

@@ -1,0 +1,12 @@
+<Project>
+  <PropertyGroup>
+    <Version>0.9.0</Version>
+    <Product>Tech Inspector</Product>
+    <Company>Simpatico Sim Shop</Company>
+    <Copyright>Simpatico Sim Shop</Copyright>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+</Project>

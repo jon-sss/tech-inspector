@@ -1,0 +1,10 @@
+# build output
+bin/
+obj/
+*.user
+.vs/
+TestResults/
+
+
+# release zips
+artifacts/

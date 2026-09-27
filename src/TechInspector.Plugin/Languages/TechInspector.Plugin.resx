@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+
+  <data name="TechInspector_Title" xml:space="preserve"><value>Tech Inspector</value></data>
+  <data name="TechInspector_ByMaker" xml:space="preserve"><value>by Simpatico Sim Shop</value></data>
+  <data name="TechInspector_TabOverview" xml:space="preserve"><value>Overview</value></data>
+  <data name="TechInspector_TabSettings" xml:space="preserve"><value>Settings</value></data>
+  <data name="TechInspector_TabBackups" xml:space="preserve">
+    <value>Backups</value>
+  </data>
+  <data name="TechInspector_TabAbout" xml:space="preserve"><value>About</value></data>
+
+  <data name="TechInspector_Status" xml:space="preserve"><value>Status</value></data>
+  <data name="TechInspector_NoFolder" xml:space="preserve"><value>No iRacing folder found under Documents.</value></data>
+  <data name="TechInspector_FolderFound" xml:space="preserve"><value>iRacing folder: {0}</value></data>
+  <data name="TechInspector_FilesFound" xml:space="preserve"><value>{0} settings files found: {1}.</value></data>
+  <data name="TechInspector_OneDrive" xml:space="preserve"><value>The iRacing folder is inside OneDrive, which can lock files while iRacing saves them.</value></data>
+  <data name="TechInspector_SimRunning" xml:space="preserve"><value>iRacing is running. Changes will wait until it closes.</value></data>
+  <data name="TechInspector_SimClosed" xml:space="preserve"><value>iRacing is closed.</value></data>
+  <data name="TechInspector_ReadOnlyNote" xml:space="preserve"><value>This build only reads your iRacing files. Editing, backups and the health check come next.</value></data>
+
+  <data name="TechInspector_SettingsSummary" xml:space="preserve"><value>{0} settings from {1} files. Read-only in this build.</value></data>
+
+  <data name="TechInspector_VersionLine" xml:space="preserve"><value>Version {0}</value></data>
+  <data name="TechInspector_AboutText" xml:space="preserve"><value>Checks and edits iRacing's settings from inside SimHub. It explains every setting, flags values that look wrong, protects your triple-screen layout from resets, and backs up your files before every change.</value></data>
+  <data name="TechInspector_WhatItTouches" xml:space="preserve"><value>What it touches</value></data>
+  <data name="TechInspector_Touch1" xml:space="preserve"><value>Changes iRacing's files in Documents\iRacing only while the sim is closed, and only when you write changes or restore a backup.</value></data>
+  <data name="TechInspector_Touch2" xml:space="preserve"><value>Backs up those files before every write. Backups stay in SimHub's data folder.</value></data>
+  <data name="TechInspector_Touch3" xml:space="preserve"><value>Moves telemetry files and hand-made copies to the Recycle Bin only when you ask.</value></data>
+  <data name="TechInspector_Touch4" xml:space="preserve"><value>Never changes the sim or its install folder.</value></data>
+  <data name="TechInspector_Touch5" xml:space="preserve"><value>Doesn't connect to the internet. Links open in your browser only when you click them.</value></data>
+  <data name="TechInspector_MadeBy" xml:space="preserve"><value>Made by Simpatico Sim Shop</value></data>
+  <data name="TechInspector_ShopText" xml:space="preserve"><value>Sim racing gear, for sim racers, by sim racers. Tech Inspector is free, and made by the same people.</value></data>
+  <data name="TechInspector_VisitShop" xml:space="preserve"><value>Visit simpaticosims.com</value></data>
+  <data name="TechInspector_Source" xml:space="preserve"><value>Source code</value></data>
+  <data name="TechInspector_SourceText" xml:space="preserve"><value>The source is on GitHub under the PolyForm Noncommercial license: free to read, build and change for non-commercial use.</value></data>
+  <data name="TechInspector_ViewSource" xml:space="preserve"><value>View on GitHub</value></data>
+  <data name="TechInspector_ReportProblem" xml:space="preserve"><value>Report a problem</value></data>
+  <data name="TechInspector_Support" xml:space="preserve"><value>Support development</value></data>
+  <data name="TechInspector_SupportText" xml:space="preserve"><value>Tech Inspector is free. If it's useful to you, a donation helps keep it current with each iRacing season. Ko-fi opens in your browser.</value></data>
+  <data name="TechInspector_DonateButton" xml:space="preserve"><value>Donate on Ko-fi</value></data>
+  <data name="TechInspector_Disclaimer" xml:space="preserve"><value>Not affiliated with iRacing.com Motorsport Simulations or SimHub. iRacing is a trademark of iRacing.com Motorsport Simulations, LLC.</value></data>
+</root>

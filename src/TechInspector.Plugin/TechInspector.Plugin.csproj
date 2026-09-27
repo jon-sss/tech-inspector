@@ -1,0 +1,62 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- The SimHub plugin: .NET Framework 4.8 and WPF, built against the DLLs of the local SimHub install. -->
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>TechInspector.Plugin</RootNamespace>
+    <AssemblyName>TechInspector.Plugin</AssemblyName>
+    <SimHubPath Condition="'$(SIMHUB_INSTALL_PATH)' != ''">$([MSBuild]::EnsureTrailingSlash('$(SIMHUB_INSTALL_PATH)'))</SimHubPath>
+    <SimHubPath Condition="'$(SimHubPath)' == ''">C:\Program Files (x86)\SimHub\</SimHubPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+
+  <!-- SimHub's own assemblies: referenced, never copied, so SimHub always loads its own versions. -->
+  <ItemGroup>
+    <Reference Include="SimHub.Plugins"><HintPath>$(SimHubPath)SimHub.Plugins.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="GameReaderCommon"><HintPath>$(SimHubPath)GameReaderCommon.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="SimHub.Logging"><HintPath>$(SimHubPath)SimHub.Logging.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="log4net"><HintPath>$(SimHubPath)log4net.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="MahApps.Metro"><HintPath>$(SimHubPath)MahApps.Metro.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="MahApps.Metro.IconPacks.Core"><HintPath>$(SimHubPath)MahApps.Metro.IconPacks.Core.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="MahApps.Metro.IconPacks.Material"><HintPath>$(SimHubPath)MahApps.Metro.IconPacks.Material.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="WoteverCommon"><HintPath>$(SimHubPath)WoteverCommon.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="WoteverLocalization"><HintPath>$(SimHubPath)WoteverLocalization.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Newtonsoft.Json"><HintPath>$(SimHubPath)Newtonsoft.Json.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TechInspector.Core\TechInspector.Core.csproj" />
+  </ItemGroup>
+
+  <!-- The shop's logo for the About tab, compiled into the DLL. -->
+  <ItemGroup>
+    <None Remove="Assets\**" />
+    <Resource Include="Assets\**" />
+  </ItemGroup>
+
+  <!-- SimHub reads UI text from Languages\<assembly>.resx next to its exe, so the file is copied, not embedded. -->
+  <ItemGroup>
+    <EmbeddedResource Remove="Languages\**" />
+    <None Include="Languages\**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- Copy the plugin into SimHub after each Debug build. SimHub picks it up on its next start.
+       If SimHub has the DLL loaded the copy fails with a warning; close SimHub and build again. -->
+  <Target Name="DeployToSimHub" AfterTargets="Build" Condition="'$(Configuration)' == 'Debug' And Exists('$(SimHubPath)SimHubWPF.exe')">
+    <ItemGroup>
+      <PluginFiles Include="$(TargetDir)TechInspector.*.dll;$(TargetDir)TechInspector.*.pdb" />
+      <LanguageFiles Include="$(TargetDir)Languages\*.resx" />
+    </ItemGroup>
+    <Copy SourceFiles="@(LanguageFiles)" DestinationFolder="$(SimHubPath)Languages" ContinueOnError="WarnAndContinue" SkipUnchangedFiles="true" Retries="0" />
+    <Copy SourceFiles="@(PluginFiles)" DestinationFolder="$(SimHubPath)" ContinueOnError="WarnAndContinue" SkipUnchangedFiles="true" Retries="0" />
+    <Message Condition="'$(MSBuildLastTaskResult)' == 'true'" Importance="high" Text="Tech Inspector copied to $(SimHubPath). Restart SimHub to load it." />
+    <Message Condition="'$(MSBuildLastTaskResult)' != 'true'" Importance="high" Text="Tech Inspector was NOT copied: SimHub has the plugin loaded. Close SimHub, then build again." />
+  </Target>
+
+</Project>

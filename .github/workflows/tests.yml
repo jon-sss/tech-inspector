@@ -1,0 +1,17 @@
+# Runs the engine tests on every push and pull request. The plugin itself needs a SimHub install
+# to build, so it isn't built here.
+name: Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  core:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - run: dotnet test tests/TechInspector.Core.Tests --nologo
