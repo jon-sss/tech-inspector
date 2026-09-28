@@ -1,0 +1,98 @@
+{
+  "goals": [
+    {
+      "id": "frame-rate",
+      "title": "Frame rate",
+      "summary": "The cap, vertical sync, latency, and what happens when iRacing isn't the focused window.",
+      "settings": [
+        "renderer|Graphics Options|LimitFrameRate",
+        "renderer|Graphics Options|DesiredFPSLimit",
+        "renderer|Graphics Options|VerticalSync",
+        "renderer|Graphics Options|NvReflexMode",
+        "renderer|User Options|reduceFramerate_WhenFocusLost",
+        "app.ini|System Meters|showFPSAndOtherMeters"
+      ]
+    },
+    {
+      "id": "image",
+      "title": "Image quality",
+      "summary": "Smoother edges, sharpening, and how much iRacing draws.",
+      "settings": [
+        "renderer|Graphics Options|AntiAliasMethod",
+        "renderer|Graphics Options|MSAASamples",
+        "renderer|Graphics Options|Sharpening",
+        "renderer|Graphics Options|ShaderQuality",
+        "renderer|Graphics Options|DynamicShadowMaps",
+        "renderer|Graphics Options|MaxCarsToDraw"
+      ]
+    },
+    {
+      "id": "view",
+      "title": "View and field of view",
+      "summary": "Where your eyes sit, how wide you see, and how your head moves.",
+      "settings": [
+        "app.ini|View|drivingCamFOV",
+        "app.ini|View|driverHeightAdj",
+        "app.ini|View|DrivingVanishY",
+        "app.ini|View|DriverRotateHead",
+        "app.ini|View|DriverHeadWobble"
+      ]
+    },
+    {
+      "id": "spotter",
+      "title": "Spotter and sound",
+      "summary": "What the spotter says, and how loud it and the sim are.",
+      "settings": [
+        "app.ini|SPCC|enabled",
+        "app.ini|SPCC|verbosity",
+        "app.ini|SPCC|reportLapsEnabled",
+        "app.ini|SPCC|reportGainingLosingEnabled",
+        "app.ini|Audio|loudnessSPCC",
+        "app.ini|Audio|masterVolumedB"
+      ]
+    },
+    {
+      "id": "night",
+      "title": "Night and wet",
+      "summary": "Headlights, night shadows and wet-road reflections.",
+      "settings": [
+        "renderer|Graphics Options|HeadlightLevel",
+        "renderer|Graphics Options|MonochromeHeadlights",
+        "renderer|Graphics Options|DNSMEnable",
+        "renderer|Graphics Options|DNSMShadowFadeTime",
+        "renderer|Graphics Options|SSRLevel",
+        "renderer|Graphics Options|SSRRainOnly"
+      ]
+    },
+    {
+      "id": "wheel",
+      "title": "Wheel and force feedback",
+      "summary": "Force feedback smoothing, the bump stop, and the lights and screen on your wheel.",
+      "settings": [
+        "app.ini|Force Feedback|enableFFB360HzInterpolated",
+        "app.ini|Force Feedback|steeringBumpStop_Deg",
+        "app.ini|Force Feedback|resetWhenFFBLost",
+        "app.ini|Force Feedback|enableWheelDisplay",
+        "app.ini|Force Feedback|debounceSeq_Ms"
+      ]
+    },
+    {
+      "id": "replays",
+      "title": "Replays and disk space",
+      "summary": "Replay memory, spooling to disk, and telemetry files.",
+      "settings": [
+        "core.ini|Replay|replayMemoryOverride",
+        "app.ini|Replay|spoolingEnabled",
+        "app.ini|Misc|irsdkAutoLogDisk",
+        "app.ini|Misc|irsdkLimitFileSize"
+      ]
+    },
+    {
+      "id": "triples",
+      "title": "Triple screens",
+      "summary": "Layout, angles and the guard against resets are on their own tab.",
+      "tab": "triples",
+      "settings": []
+    }
+  ]
+}

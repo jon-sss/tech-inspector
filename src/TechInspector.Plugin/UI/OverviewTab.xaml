@@ -5,38 +5,20 @@
              xmlns:iconpacks="clr-namespace:MahApps.Metro.IconPacks;assembly=MahApps.Metro.IconPacks.Material"
              xmlns:ui="clr-namespace:TechInspector.Plugin.UI">
     <UserControl.Resources>
+        <ResourceDictionary>
+        <ResourceDictionary.MergedDictionaries>
+            <ResourceDictionary Source="/TechInspector.Plugin;component/UI/Theme.xaml" />
+        </ResourceDictionary.MergedDictionaries>
         <ui:BoolToVisibility x:Key="Visible" />
         <ui:BoolToVisibility x:Key="Hidden" Invert="True" />
-        <Style x:Key="Muted" TargetType="TextBlock">
-            <Setter Property="Opacity" Value="0.62" />
-            <Setter Property="FontSize" Value="12.5" />
-            <Setter Property="TextWrapping" Value="Wrap" />
-        </Style>
-        <Style x:Key="SectionTitle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="15" />
-            <Setter Property="Margin" Value="2,22,0,8" />
-        </Style>
-        <!-- Cards and nested rows: neutral overlays, so they sit right on SimHub's Night and Day themes. -->
-        <Style x:Key="Card" TargetType="Border">
-            <Setter Property="Background" Value="#1A808080" />
-            <Setter Property="CornerRadius" Value="4" />
-            <Setter Property="Padding" Value="14,10" />
-            <Setter Property="Margin" Value="0,0,0,6" />
-        </Style>
-        <Style x:Key="Nested" TargetType="Border">
-            <Setter Property="Background" Value="#14000000" />
-            <Setter Property="CornerRadius" Value="3" />
-            <Setter Property="Padding" Value="12,7" />
-            <Setter Property="Margin" Value="0,0,0,4" />
-        </Style>
-
+        
         <!-- The unusual-values report -->
         <DataTemplate DataType="{x:Type ui:UnusualCard}">
             <Border Style="{StaticResource Card}">
                 <Grid>
                     <Grid.ColumnDefinitions><ColumnDefinition Width="28" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                     <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
-                    <iconpacks:PackIconMaterial Kind="Alert" Foreground="#FFE8A33A" Width="19" Height="19" VerticalAlignment="Center" ToolTip="Concerning" />
+                    <iconpacks:PackIconMaterial Kind="Alert" Foreground="{StaticResource WarnBrush}" Width="19" Height="19" VerticalAlignment="Center" ToolTip="Concerning" />
                     <StackPanel Grid.Column="1" Margin="10,0,12,0">
                         <TextBlock Text="{Binding Title}" FontSize="14" />
                         <TextBlock Style="{StaticResource Muted}" Text="They differ from iRacing's defaults or look like a mistake. Ignore the ones you set on purpose." />
@@ -46,7 +28,7 @@
                         <ItemsControl ItemsSource="{Binding Rows}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Style="{StaticResource Nested}">
+                                    <Border Style="{StaticResource Row}">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="220" /><ColumnDefinition Width="110" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" />
@@ -57,7 +39,7 @@
                                             </StackPanel>
                                             <TextBlock Grid.Column="1" Text="{Binding Value}" FontSize="13.5" VerticalAlignment="Center" />
                                             <TextBlock Grid.Column="2" Text="{Binding Note}" FontSize="12.5" Opacity="0.8" TextWrapping="Wrap" VerticalAlignment="Center" Margin="0,0,12,0" />
-                                            <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
+                                            <StackPanel Grid.Column="3" Style="{StaticResource HoverLinks}">
                                                 <styles:SHLinkButtonSmall Content="Reset" Click="ResetUnusual_Click" ToolTip="{Binding ResetTip}" Visibility="{Binding CanReset, Converter={StaticResource Visible}}" Margin="0,0,12,0" />
                                                 <styles:SHLinkButtonSmall Content="Go to setting" Click="GoToUnusual_Click" Margin="0,0,12,0" />
                                                 <styles:SHLinkButtonSmall Content="Ignore" Click="IgnoreUnusual_Click" ToolTip="Stops flagging this value. It's flagged again if the value changes." />
@@ -79,19 +61,21 @@
                 <Grid>
                     <Grid.ColumnDefinitions><ColumnDefinition Width="28" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                     <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
-                    <iconpacks:PackIconMaterial Kind="Alert" Foreground="#FFE8A33A" Width="19" Height="19" VerticalAlignment="Center" ToolTip="Concerning" />
+                    <iconpacks:PackIconMaterial Kind="Alert" Foreground="{StaticResource WarnBrush}" Width="19" Height="19" VerticalAlignment="Center" ToolTip="Concerning" />
                     <StackPanel Grid.Column="1" Margin="10,0,12,0">
                         <TextBlock Text="{Binding Title}" FontSize="14" />
                         <TextBlock Text="{Binding Detail}" Style="{StaticResource Muted}" />
                     </StackPanel>
                     <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                        <styles:SHLinkButtonSmall Content="{Binding ToggleText}" Click="TelemetryToggle_Click" Margin="0,0,12,0" />
-                        <styles:SHLinkButtonSmall Content="Go to setting" Click="TelemetrySetting_Click" Margin="0,0,12,0" />
-                        <styles:SHLinkButtonSmall Content="Open folder" Click="TelemetryFolder_Click" Margin="0,0,12,0" />
-                        <styles:SHLinkButtonSmall Content="Ignore" Tag="telemetry" Click="IgnoreFinding_Click" ToolTip="Hides this finding. It stays listed under Ignored." />
+                        <StackPanel Style="{StaticResource HoverLinks}">
+                            <styles:SHLinkButtonSmall Content="Go to setting" Click="TelemetrySetting_Click" Margin="0,0,12,0" />
+                            <styles:SHLinkButtonSmall Content="Open folder" Click="TelemetryFolder_Click" Margin="0,0,12,0" />
+                            <styles:SHLinkButtonSmall Content="Ignore" Tag="telemetry" Click="IgnoreFinding_Click" Margin="0,0,12,0" ToolTip="Hides this finding. It stays listed under Ignored." />
+                        </StackPanel>
+                        <styles:SHLinkButtonSmall Content="{Binding ToggleText}" Click="TelemetryToggle_Click" />
                     </StackPanel>
                     <StackPanel Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Margin="10,10,0,2" Visibility="{Binding PanelOpen, Converter={StaticResource Visible}}">
-                        <Rectangle Height="1" Fill="#22808080" Margin="0,0,0,12" />
+                        <Rectangle Height="1" Fill="{StaticResource RuleBrush}" Margin="0,0,0,12" />
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="Remove" VerticalAlignment="Center" Margin="0,0,10,0" Opacity="0.8" />
                             <ComboBox ItemsSource="{Binding Choices}" SelectedItem="{Binding Selected, Mode=TwoWay}" MinWidth="340" AutomationProperties.Name="Which files to remove">
@@ -117,7 +101,7 @@
             <Border Style="{StaticResource Card}">
                 <Grid>
                     <Grid.ColumnDefinitions><ColumnDefinition Width="28" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                    <iconpacks:PackIconMaterial Kind="CheckCircle" Foreground="#FF7DDC6A" Width="19" Height="19" VerticalAlignment="Center" ToolTip="Done" />
+                    <iconpacks:PackIconMaterial Kind="CheckCircle" Foreground="{StaticResource OkBrush}" Width="19" Height="19" VerticalAlignment="Center" ToolTip="Done" />
                     <StackPanel Grid.Column="1" Margin="10,0,12,0">
                         <TextBlock Text="{Binding Title}" FontSize="14" />
                         <TextBlock Text="{Binding Detail}" Style="{StaticResource Muted}" />
@@ -140,18 +124,22 @@
                         <TextBlock Text="{Binding Detail}" Style="{StaticResource Muted}" />
                     </StackPanel>
                     <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                        <styles:SHLinkButtonSmall Content="Go to setting" Click="FindingSetting_Click" Margin="0,0,12,0" Visibility="{Binding HasSetting, Converter={StaticResource Visible}}" />
-                        <styles:SHLinkButtonSmall Content="Ignore" Tag="{Binding Finding.Id}" Click="IgnoreFinding_Click" ToolTip="Hides this finding. It stays listed under Ignored." />
+                        <StackPanel Style="{StaticResource HoverLinks}">
+                            <styles:SHLinkButtonSmall Content="Ignore" Tag="{Binding Finding.Id}" Click="IgnoreFinding_Click" Margin="0,0,12,0" ToolTip="Hides this finding. It stays listed under Ignored." />
+                        </StackPanel>
+                        <styles:SHLinkButtonSmall Content="Go to setting" Click="FindingSetting_Click" Visibility="{Binding HasSetting, Converter={StaticResource Visible}}" />
+                        <styles:SHLinkButtonSmall Content="{Binding TabText}" Click="FindingTab_Click" Visibility="{Binding HasTab, Converter={StaticResource Visible}}" />
                     </StackPanel>
                 </Grid>
             </Border>
         </DataTemplate>
+        </ResourceDictionary>
     </UserControl.Resources>
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="0,4,14,24">
+        <StackPanel Margin="0,4,14,24" MaxWidth="{StaticResource ColumnWidth}">
             <!-- SimHub's teal information banner: the headline, then status lines. -->
-            <Border Background="#FF375963" CornerRadius="3" Padding="18,14">
+            <Border Background="#FF375963" CornerRadius="4" Padding="18,14">
                 <DockPanel>
                     <iconpacks:PackIconMaterial DockPanel.Dock="Left" Kind="Information" Foreground="White" Width="28" Height="28" Margin="0,0,16,0" VerticalAlignment="Top" />
                     <StackPanel>
@@ -170,7 +158,7 @@
                 </DockPanel>
             </Border>
 
-            <TextBlock x:Name="LookAtTitle" Style="{StaticResource SectionTitle}" Text="To look at" />
+            <ContentControl x:Name="LookAtTitle" Style="{StaticResource RuleHeading}" Content="To look at" />
             <ItemsControl x:Name="Cards" Focusable="False" />
 
             <StackPanel x:Name="IgnoredLine" Orientation="Horizontal" Margin="2,6,0,0" Visibility="Collapsed">
@@ -180,7 +168,7 @@
             <ItemsControl x:Name="IgnoredList" Margin="0,6,0,0" Visibility="Collapsed">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Border Style="{StaticResource Nested}">
+                        <Border Style="{StaticResource Row}">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="260" /><ColumnDefinition Width="110" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" />
@@ -198,23 +186,27 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
 
-            <TextBlock Style="{StaticResource SectionTitle}"><Run Text="Checks passed" /><Run x:Name="PassedCount" FontSize="13" Foreground="Gray" /></TextBlock>
-            <ItemsControl x:Name="PassedList">
+            <!-- Checks passed: one line; the list opens on request. -->
+            <StackPanel Orientation="Horizontal" Margin="2,20,0,0">
+                <iconpacks:PackIconMaterial Kind="CheckBold" Foreground="{StaticResource OkBrush}" Width="15" Height="15" Margin="0,1,10,0" VerticalAlignment="Center" />
+                <TextBlock x:Name="PassedText" VerticalAlignment="Center" />
+                <styles:SHLinkButtonSmall x:Name="PassedToggle" Content="Show" Click="PassedToggle_Click" Margin="8,0,0,0" VerticalAlignment="Center" />
+            </StackPanel>
+            <ItemsControl x:Name="PassedList" Margin="27,8,0,0" Visibility="Collapsed">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate><UniformGrid Columns="2" /></ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <StackPanel Orientation="Horizontal" Margin="2,3,28,3">
-                            <iconpacks:PackIconMaterial Kind="CheckBold" Foreground="#FF4CAF50" Width="15" Height="15" Margin="0,1,10,0" />
-                            <TextBlock Text="{Binding}" TextWrapping="Wrap" />
+                        <StackPanel Orientation="Horizontal" Margin="0,3,28,3">
+                            <iconpacks:PackIconMaterial Kind="Check" Foreground="{StaticResource OkBrush}" Width="13" Height="13" Margin="0,2,10,0" />
+                            <TextBlock Text="{Binding}" TextWrapping="Wrap" Opacity="0.85" />
                         </StackPanel>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
 
-            <StackPanel x:Name="AlsoLine" Orientation="Horizontal" Margin="2,18,0,0">
-                <TextBlock Text="Also:" Style="{StaticResource Muted}" VerticalAlignment="Center" Margin="0,0,6,0" />
+            <StackPanel x:Name="AlsoLine" Orientation="Horizontal" Margin="27,8,0,0">
                 <styles:SHLinkButtonSmall x:Name="InertLink" Click="Inert_Click" VerticalAlignment="Center" Padding="0" />
             </StackPanel>
         </StackPanel>

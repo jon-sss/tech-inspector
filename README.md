@@ -5,7 +5,7 @@
 A SimHub plugin that explains, checks and edits iRacing's settings.
 
 - **Overview.** A health check of your setup: values that differ from iRacing's defaults or look like mistakes, an oversized telemetry folder, low disk space and more. Each finding can be ignored.
-- **Settings.** Every setting in `app.ini`, `core.ini` and the graphics files, with a plain-language description, search, and filters. The common settings come first, and the rest are a click away.
+- **Settings.** Opens on common fixes (frame rate, image quality, view, spotter and sound, night and wet, wheel, replays), each showing only the handful of settings behind it. Every setting in `app.ini`, `core.ini` and the graphics files is a click away, with a plain-language description and search.
 - **Triple screens.** A live top view of your triple-monitor layout, the ideal side-screen angle for your seating position, and a guard that puts your layout back when iRacing resets it.
 - **Backups.** A full backup before every change, plus ones you take yourself. Compare any backup with your current files, restore all of it or one file, and turn your hand-made copies (`rendererDX11Monitor - Copy.ini` and the like) into dated backups.
 

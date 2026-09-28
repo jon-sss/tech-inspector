@@ -14,18 +14,14 @@
     </UserControl.InputBindings>
 
     <UserControl.Resources>
+        <ResourceDictionary>
+        <ResourceDictionary.MergedDictionaries>
+            <ResourceDictionary Source="/TechInspector.Plugin;component/UI/Theme.xaml" />
+        </ResourceDictionary.MergedDictionaries>
         <ui:BoolToVisibility x:Key="Visible" />
         <ui:BoolToVisibility x:Key="Hidden" Invert="True" />
         <ui:NullToVisibility x:Key="IfText" />
-        <SolidColorBrush x:Key="WarnBrush" Color="#E8A33A" />
-        <SolidColorBrush x:Key="DangerBrush" Color="#E35D5D" />
         <SolidColorBrush x:Key="LineBrush" Color="#8FB8D6" />
-
-        <Style x:Key="Muted" TargetType="TextBlock">
-            <Setter Property="Opacity" Value="0.62" />
-            <Setter Property="FontSize" Value="12.5" />
-            <Setter Property="TextWrapping" Value="Wrap" />
-        </Style>
 
         <!-- Reset and hide: small icon buttons that appear when the row is hovered or focused. -->
         <Style x:Key="RowAction" TargetType="Button">
@@ -41,7 +37,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Bg" Property="Background" Value="#33FFFFFF" />
+                                <Setter TargetName="Bg" Property="Background" Value="{StaticResource HoverBrush}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -94,7 +90,7 @@
         <DataTemplate DataType="{x:Type ui:TierDividerItem}">
             <DockPanel Margin="0,16,0,2">
                 <TextBlock Text="{Binding Title}" FontSize="12.5" Opacity="0.8" Margin="0,0,10,0" />
-                <Rectangle Height="1" Fill="#22FFFFFF" VerticalAlignment="Center" />
+                <Rectangle Height="1" Fill="{StaticResource RuleBrush}" VerticalAlignment="Center" />
             </DockPanel>
         </DataTemplate>
         <DataTemplate DataType="{x:Type ui:MoreLinkItem}">
@@ -155,7 +151,7 @@
 
                 <ContentControl Grid.Column="2" Content="{Binding}" ContentTemplateSelector="{StaticResource Controls}" VerticalAlignment="Center" HorizontalAlignment="Right" Focusable="False" />
 
-                <Rectangle Grid.Row="1" Grid.ColumnSpan="3" Height="1" Fill="#14FFFFFF" />
+                <Rectangle Grid.Row="1" Grid.ColumnSpan="3" Height="1" Fill="{StaticResource RuleBrush}" />
             </Grid>
             <DataTemplate.Triggers>
                 <DataTrigger Binding="{Binding Marker}" Value="Danger"><Setter TargetName="MarkDanger" Property="Visibility" Value="Visible" /></DataTrigger>
@@ -166,73 +162,169 @@
                 <Trigger SourceName="RowRoot" Property="IsKeyboardFocusWithin" Value="True"><Setter TargetName="Actions" Property="Opacity" Value="1" /></Trigger>
             </DataTemplate.Triggers>
         </DataTemplate>
+        </ResourceDictionary>
     </UserControl.Resources>
 
-    <DockPanel>
-        <ScrollViewer x:Name="Scroller" VerticalScrollBarVisibility="Auto">
-            <StackPanel Margin="0,4,14,24">
-                <!-- Toolbar: search first, then the filter; the graphics file on the right. -->
-                <DockPanel Margin="0,0,0,10">
-                    <StackPanel DockPanel.Dock="Right" HorizontalAlignment="Right">
-                        <ComboBox x:Name="ModeBox" MinWidth="300" SelectionChanged="Mode_Changed" AutomationProperties.Name="Graphics file" />
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,5,0,0">
-                            <styles:SHLinkButtonSmall Content="Open file" Click="OpenFile_Click" Margin="0,0,14,0" />
-                            <styles:SHLinkButtonSmall Content="Open folder" Click="OpenFolder_Click" />
+    <!-- The centred column: the toolbar across the top, then the rail beside the pane. -->
+    <Grid MaxWidth="{StaticResource ColumnWidth}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Toolbar: search on the left; the graphics file and the View menu on the right. -->
+        <DockPanel Margin="0,4,0,18">
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="Graphics file" Style="{StaticResource Muted}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                <ComboBox x:Name="ModeBox" MinWidth="120" SelectionChanged="Mode_Changed" AutomationProperties.Name="Graphics file" />
+                <styles:SHButtonSecondary x:Name="ViewButton" Margin="10,0,0,0" Click="View_Click" ToolTip="More settings, expert settings, ini lines, and the files themselves">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="View" />
+                        <iconpacks:PackIconMaterial Kind="ChevronDown" Width="10" Height="10" Margin="7,1,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
+                </styles:SHButtonSecondary>
+            </StackPanel>
+            <TextBox x:Name="SearchBox" Width="420" HorizontalAlignment="Left" Text="{Binding Query, UpdateSourceTrigger=PropertyChanged, Delay=200}"
+                     mah:TextBoxHelper.Watermark="Search all settings" mah:TextBoxHelper.ClearTextButton="True"
+                     AutomationProperties.Name="Search all settings" KeyDown="Search_KeyDown" />
+        </DockPanel>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="248" />
+                <ColumnDefinition Width="32" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- The rail: common fixes, then the lists. Headings can't be selected. -->
+            <ListBox x:Name="Rail" ItemsSource="{Binding Nav}" SelectedItem="{Binding Selected, Mode=TwoWay}" SelectionChanged="Rail_SelectionChanged"
+                     Background="Transparent" BorderThickness="0" Padding="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                     AutomationProperties.Name="Settings, by what you want to change">
+                <ListBox.ItemContainerStyle>
+                    <Style TargetType="ListBoxItem">
+                        <Setter Property="IsEnabled" Value="{Binding IsSelectable}" />
+                        <Setter Property="Visibility" Value="{Binding IsVisible, Converter={StaticResource Visible}}" />
+                        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                        <Setter Property="AutomationProperties.Name" Value="{Binding Title}" />
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ListBoxItem">
+                                    <Grid Background="Transparent" Margin="0,0,0,1">
+                                        <Border x:Name="Hover" Background="{StaticResource HoverBrush}" CornerRadius="3" Opacity="0" />
+                                        <Border x:Name="Sel" Background="{DynamicResource AccentColorBrush}" CornerRadius="3" Opacity="0" />
+                                        <Border x:Name="Focus" BorderBrush="{DynamicResource AccentColorBrush}" BorderThickness="1" CornerRadius="3" Opacity="0" />
+                                        <ContentPresenter Margin="10,7,10,7" />
+                                    </Grid>
+                                    <ControlTemplate.Triggers>
+                                        <MultiTrigger>
+                                            <MultiTrigger.Conditions>
+                                                <Condition Property="IsMouseOver" Value="True" />
+                                                <Condition Property="IsEnabled" Value="True" />
+                                            </MultiTrigger.Conditions>
+                                            <Setter TargetName="Hover" Property="Opacity" Value="1" />
+                                        </MultiTrigger>
+                                        <Trigger Property="IsSelected" Value="True"><Setter TargetName="Sel" Property="Opacity" Value="0.32" /></Trigger>
+                                        <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Focus" Property="Opacity" Value="1" /></Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </ListBox.ItemContainerStyle>
+                <ListBox.Resources>
+                    <DataTemplate DataType="{x:Type ui:NavHeading}">
+                        <ContentControl x:Name="Heading" Style="{StaticResource RuleHeading}" Content="{Binding Title}" Margin="-10,18,-10,0" />
+                        <DataTemplate.Triggers>
+                            <DataTrigger Binding="{Binding IsFirst}" Value="True"><Setter TargetName="Heading" Property="Margin" Value="-10,0,-10,0" /></DataTrigger>
+                        </DataTemplate.Triggers>
+                    </DataTemplate>
+                    <!-- Common fixes and lists: the name, a count for lists, and the checkpoint mark. -->
+                    <DataTemplate DataType="{x:Type ui:NavItem}">
+                        <DockPanel>
+                            <Grid DockPanel.Dock="Right" Width="16" Margin="8,0,0,0" Background="Transparent" ToolTip="{Binding MarkTip}">
+                                <iconpacks:PackIconMaterial x:Name="Tick" Kind="Check" Width="12" Height="12" Opacity="0.6" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed" />
+                                <iconpacks:PackIconMaterial x:Name="Unusual" Kind="AlertCircle" Foreground="{StaticResource WarnBrush}" Width="14" Height="14" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed" />
+                                <Ellipse x:Name="Changed" Width="7" Height="7" Fill="{DynamicResource AccentColorBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed" />
+                                <iconpacks:PackIconMaterial x:Name="Link" Kind="ArrowRight" Width="12" Height="12" Opacity="0.6" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed" />
+                            </Grid>
+                            <TextBlock DockPanel.Dock="Right" Text="{Binding CountText}" FontSize="12" Opacity="0.7" VerticalAlignment="Center" Margin="8,0,0,0" />
+                            <TextBlock Text="{Binding Title}" FontSize="13.5" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                        </DockPanel>
+                        <DataTemplate.Triggers>
+                            <DataTrigger Binding="{Binding Mark}" Value="Tick"><Setter TargetName="Tick" Property="Visibility" Value="Visible" /></DataTrigger>
+                            <DataTrigger Binding="{Binding Mark}" Value="Unusual"><Setter TargetName="Unusual" Property="Visibility" Value="Visible" /></DataTrigger>
+                            <DataTrigger Binding="{Binding Mark}" Value="Changed"><Setter TargetName="Changed" Property="Visibility" Value="Visible" /></DataTrigger>
+                            <DataTrigger Binding="{Binding Mark}" Value="Link"><Setter TargetName="Link" Property="Visibility" Value="Visible" /></DataTrigger>
+                        </DataTemplate.Triggers>
+                    </DataTemplate>
+                </ListBox.Resources>
+            </ListBox>
+
+            <ScrollViewer x:Name="Scroller" Grid.Column="2" VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="0,0,14,28">
+
+                    <!-- A common fix: its title, one line, and only its settings. -->
+                    <StackPanel Visibility="{Binding ShowingGoal, Converter={StaticResource Visible}}">
+                        <TextBlock Text="{Binding Goal.Title}" FontSize="19" Margin="0,0,0,3" />
+                        <TextBlock Text="{Binding Goal.Summary}" Style="{StaticResource Muted}" FontSize="13" />
+                        <Border Style="{StaticResource Card}" Margin="0,16,0,0" Padding="18,2,16,2">
+                            <ItemsControl ItemsSource="{Binding Goal.Rows}" Focusable="False" />
+                        </Border>
+                        <StackPanel Orientation="Horizontal" Margin="2,12,0,0" Visibility="{Binding Goal.HasSections, Converter={StaticResource Visible}}">
+                            <TextBlock Text="Everything in" Style="{StaticResource Muted}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                            <ItemsControl ItemsSource="{Binding Goal.Sections}" Focusable="False">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <styles:SHLinkButtonSmall Content="{Binding Name}" Click="Section_Click" Margin="0,0,14,0" VerticalAlignment="Center" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
                         </StackPanel>
                     </StackPanel>
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Top">
-                        <TextBox x:Name="SearchBox" Width="420" Text="{Binding Query, UpdateSourceTrigger=PropertyChanged, Delay=200}"
-                                 mah:TextBoxHelper.Watermark="Search all settings" mah:TextBoxHelper.ClearTextButton="True"
-                                 AutomationProperties.Name="Search all settings" KeyDown="Search_KeyDown" />
-                        <ComboBox x:Name="FilterBox" MinWidth="200" Margin="10,0,0,0" SelectedValuePath="Tag" SelectedValue="{Binding Filter, Mode=TwoWay}" AutomationProperties.Name="Show">
-                            <ComboBoxItem Tag="all" Content="All settings" />
-                            <ComboBoxItem Tag="changed" Content="Changed, not written" />
-                            <ComboBoxItem Tag="unusual" Content="Unusual values" />
-                            <ComboBoxItem Tag="inert" Content="No effect right now" />
-                            <ComboBoxItem Tag="ini" Content="Not in iRacing's options" />
-                        </ComboBox>
+
+                    <!-- A list or a search: the matching sections, grouped under rule headings by what they're for. -->
+                    <StackPanel Visibility="{Binding ShowingList, Converter={StaticResource Visible}}">
+                        <TextBlock Text="{Binding ListTitle}" FontSize="19" Margin="0,0,0,3" />
+                        <TextBlock Text="{Binding Summary}" Style="{StaticResource Muted}" FontSize="13" />
+                        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                            <styles:SHLinkButtonSmall Content="{Binding ShowMoreText}" Click="ShowMore_Click" Margin="0,0,16,0" Visibility="{Binding CanShowMore, Converter={StaticResource Visible}}" />
+                            <styles:SHLinkButtonSmall Content="{Binding ShowExpertText}" Click="ShowExpert_Click" Visibility="{Binding CanShowExpert, Converter={StaticResource Visible}}" />
+                        </StackPanel>
+                        <TextBlock Text="{Binding EmptyText}" Style="{StaticResource Muted}" Margin="0,24,0,0" Visibility="{Binding IsEmpty, Converter={StaticResource Visible}}" />
+                        <ItemsControl ItemsSource="{Binding Areas}" Focusable="False">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel>
+                                        <ContentControl Style="{StaticResource RuleHeading}" Content="{Binding Title}" Margin="0,24,0,8" />
+                                        <ItemsControl ItemsSource="{Binding Cards}" Focusable="False">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <styles:SHExpander IsExpanded="{Binding IsExpanded, Mode=TwoWay}" Margin="0,0,0,6">
+                                                        <styles:SHExpander.Header>
+                                                            <DockPanel LastChildFill="False">
+                                                                <TextBlock DockPanel.Dock="Left" Text="{Binding Name}" FontSize="14" VerticalAlignment="Center" />
+                                                                <TextBlock DockPanel.Dock="Left" Text="{Binding RawName}" FontFamily="Consolas" FontSize="12" Opacity="0.55" Margin="12,0,0,0" VerticalAlignment="Center"
+                                                                           Visibility="{Binding DataContext.ShowIniLines, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource Visible}}" />
+                                                                <TextBlock DockPanel.Dock="Right" FontSize="12.5" VerticalAlignment="Center" Margin="0,0,6,0">
+                                                                    <Run Text="{Binding ChangedText, Mode=OneWay}" FontWeight="SemiBold" /><Run Text="{Binding CountText, Mode=OneWay}" Foreground="Gray" />
+                                                                </TextBlock>
+                                                            </DockPanel>
+                                                        </styles:SHExpander.Header>
+                                                        <ItemsControl ItemsSource="{Binding Items}" Margin="34,0,14,8" Focusable="False" />
+                                                    </styles:SHExpander>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                     </StackPanel>
-                </DockPanel>
-
-                <WrapPanel Margin="0,0,0,8">
-                    <styles:SHToggleCheckbox IsChecked="{Binding ShowMore}" Content="Show more settings" Margin="0,0,24,4" />
-                    <styles:SHToggleCheckbox IsChecked="{Binding ShowExpert}" Content="Show expert settings" Margin="0,0,24,4" />
-                    <styles:SHToggleCheckbox IsChecked="{Binding ShowIniLines}" Content="Show ini lines" Margin="0,0,24,4" />
-                </WrapPanel>
-
-                <TextBlock Text="{Binding Summary}" Style="{StaticResource Muted}" Margin="2,0,0,2" />
-                <TextBlock Text="{Binding EmptyText}" Style="{StaticResource Muted}" Margin="2,24,0,0" Visibility="{Binding IsEmpty, Converter={StaticResource Visible}}" />
-
-                <!-- Focus areas, each a title over its section cards. -->
-                <ItemsControl ItemsSource="{Binding Areas}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel>
-                                <TextBlock Text="{Binding Title}" FontSize="15" Margin="2,24,0,8" />
-                                <ItemsControl ItemsSource="{Binding Cards}">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <styles:SHExpander IsExpanded="{Binding IsExpanded, Mode=TwoWay}" Margin="0,0,0,6">
-                                                <styles:SHExpander.Header>
-                                                    <DockPanel LastChildFill="False">
-                                                        <TextBlock DockPanel.Dock="Left" Text="{Binding Name}" FontSize="14" VerticalAlignment="Center" />
-                                                        <TextBlock DockPanel.Dock="Left" Text="{Binding RawName}" FontFamily="Consolas" FontSize="12" Opacity="0.55" Margin="12,0,0,0" VerticalAlignment="Center"
-                                                                   Visibility="{Binding DataContext.ShowIniLines, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource Visible}}" />
-                                                        <TextBlock DockPanel.Dock="Right" FontSize="12.5" VerticalAlignment="Center" Margin="0,0,6,0">
-                                                            <Run Text="{Binding ChangedText, Mode=OneWay}" FontWeight="SemiBold" /><Run Text="{Binding CountText, Mode=OneWay}" Foreground="Gray" />
-                                                        </TextBlock>
-                                                    </DockPanel>
-                                                </styles:SHExpander.Header>
-                                                <ItemsControl ItemsSource="{Binding Items}" Margin="34,0,14,8" Focusable="False" />
-                                            </styles:SHExpander>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </StackPanel>
-        </ScrollViewer>
-    </DockPanel>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+    </Grid>
 </UserControl>

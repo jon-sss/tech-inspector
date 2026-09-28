@@ -82,8 +82,7 @@ namespace TechInspector.Plugin.UI
             DoneCard.DataContext = _done;
             if (_done == null) return;
             DoneIcon.Kind = _done.IsError ? MahApps.Metro.IconPacks.PackIconMaterialKind.AlertCircle : MahApps.Metro.IconPacks.PackIconMaterialKind.CheckCircle;
-            DoneIcon.Foreground = _done.IsError ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xE5, 0x73, 0x73))
-                                                : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x7D, 0xDC, 0x6A));
+            DoneIcon.Foreground = (System.Windows.Media.Brush)FindResource(_done.IsError ? "DangerBrush" : "OkBrush");
         }
 
         private void SetDone(BackupsDone done) { _done = done; ShowDone(); }

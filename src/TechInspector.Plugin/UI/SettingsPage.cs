@@ -57,7 +57,7 @@ namespace TechInspector.Plugin.UI
     /// (core shows, "more" behind Show more, expert behind the toggle), search and filters.
     /// Changed and unusual rows always show, whatever their tier.
     /// </summary>
-    public sealed class SettingsPage : ViewModelBase
+    public sealed partial class SettingsPage : ViewModelBase
     {
         public const string FilterAll = "all", FilterChanged = "changed", FilterUnusual = "unusual", FilterInert = "inert", FilterIniOnly = "ini";
 
@@ -68,11 +68,12 @@ namespace TechInspector.Plugin.UI
         private bool _showMore, _showExpert, _showIniLines;
         private List<AreaGroup> _areas = new List<AreaGroup>();
 
-        public SettingsPage(SettingsSession session, ISet<string> hidden)
+        public SettingsPage(SettingsSession session, ISet<string> hidden, IEnumerable<Core.Catalog.GoalDef> goals = null)
         {
             Session = session;
             _hidden = hidden;
             foreach (var s in session.Settings) _rows[s.Id] = new SettingRow(this, s);
+            BuildNav(goals);
         }
 
         public SettingsSession Session { get; }
@@ -107,6 +108,8 @@ namespace TechInspector.Plugin.UI
         {
             if (old == null) return;
             _query = old._query; _filter = old._filter;
+            var same = _nav.FirstOrDefault(n => n.IsSelectable && n.Key == old._selected?.Key);
+            if (same != null) _selected = same;
             foreach (var kv in old.Expanded) Expanded[kv.Key] = kv.Value;
             foreach (var k in old._moreOpen) _moreOpen.Add(k);
         }
@@ -155,7 +158,8 @@ namespace TechInspector.Plugin.UI
                     CountText = Filtering ? $"{shown} of {Plural(avail.Count, "setting", "settings")}" : Plural(shown, "setting", "settings"),
                     ChangedText = rows.Count(r => r.Setting.IsChanged) is int ch && ch > 0 ? $"{ch} changed · " : null,
                 };
-                bool open = Expanded.TryGetValue(info.Key, out var o) ? o : Filtering || (info.Section == "Graphics Options" && info.FileName.StartsWith("renderer"));
+                // All settings opens as an index of closed sections; searches and filters open what they match.
+                bool open = Expanded.TryGetValue(info.Key, out var o) ? o : Filtering;
                 card.SetExpandedSilently(open);
                 if (open) FillCard(card);
 
@@ -174,6 +178,7 @@ namespace TechInspector.Plugin.UI
             else if (!_showExpert) Summary = $"Showing all settings except {nExpert} expert ones.";
             else if (!_showMore) Summary = $"{nMore} more settings are hidden.";
             else Summary = $"Showing all {Session.Settings.Count} settings.";
+            RefreshNav();
         }
 
         private sealed class Tiers { public List<SettingRow> Core, More, Expert; public bool MoreOpen; public int Shown; }
@@ -247,6 +252,7 @@ namespace TechInspector.Plugin.UI
         {
             _query = ""; Raise(nameof(Query));
             _filter = FilterAll; Raise(nameof(Filter));
+            _selected = AllNav; Raise(nameof(Selected));
             if (s.IsExpert) { _showExpert = true; Raise(nameof(ShowExpert)); }
             if (s.Tier == "more") _moreOpen.Add(s.SectionInfo.Key);
             _hidden.Remove(s.Id);
@@ -312,6 +318,7 @@ namespace TechInspector.Plugin.UI
                     card.ChangedText = ch > 0 ? $"{ch} changed · " : null;
                     card.RaiseCounts();
                 }
+            RefreshNav();
             DraftsChanged?.Invoke(this, EventArgs.Empty);
         }
 

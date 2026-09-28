@@ -50,6 +50,10 @@ namespace TechInspector.Plugin
         /// <summary>The researched catalog, embedded in TechInspector.Core.</summary>
         public SettingsCatalog Catalog => _catalog ?? (_catalog = SettingsCatalog.LoadEmbedded());
 
+        private System.Collections.Generic.IReadOnlyList<GoalDef> _goals;
+        /// <summary>The common fixes the Settings tab opens on, embedded in TechInspector.Core.</summary>
+        public System.Collections.Generic.IReadOnlyList<GoalDef> Goals => _goals ?? (_goals = GoalList.LoadEmbedded().Goals);
+
         public ImageSource PictureIcon => _icon ?? (_icon = MenuIcon());
 
         public string LeftMenuTitle => "Tech Inspector";

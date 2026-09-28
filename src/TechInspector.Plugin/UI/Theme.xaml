@@ -1,0 +1,75 @@
+<!-- Shared look for every tab: SimHub's own colours, plus the few things that are ours
+     (rule headings, the centred column width, checkpoint marks). Colours are neutral overlays,
+     so they sit right on SimHub's Night and Day themes. -->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <!-- The centred column every tab's content sits in. -->
+    <sys:Double x:Key="ColumnWidth">1040</sys:Double>
+
+    <SolidColorBrush x:Key="RuleBrush" Color="#38808080" />
+    <SolidColorBrush x:Key="CardBrush" Color="#1A808080" />
+    <SolidColorBrush x:Key="HoverBrush" Color="#14808080" />
+    <SolidColorBrush x:Key="WarnBrush" Color="#E8A33A" />
+    <SolidColorBrush x:Key="OkBrush" Color="#4CAF50" />
+    <SolidColorBrush x:Key="DangerBrush" Color="#E35D5D" />
+
+    <Style x:Key="Muted" TargetType="TextBlock">
+        <Setter Property="Opacity" Value="0.62" />
+        <Setter Property="FontSize" Value="12.5" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+
+    <!-- A heading followed by a hairline rule to the edge: "Common fixes ────────". -->
+    <Style x:Key="RuleHeading" TargetType="ContentControl">
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="FontSize" Value="13.5" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Margin" Value="0,26,0,10" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ContentControl">
+                    <DockPanel>
+                        <ContentPresenter DockPanel.Dock="Left" VerticalAlignment="Center" Margin="0,0,12,0" TextBlock.Foreground="{TemplateBinding Foreground}" />
+                        <Rectangle Height="1" Fill="{StaticResource RuleBrush}" VerticalAlignment="Center" Margin="0,2,0,0" />
+                    </DockPanel>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="Card" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource CardBrush}" />
+        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="Padding" Value="16,11" />
+        <Setter Property="Margin" Value="0,0,0,6" />
+    </Style>
+
+    <!-- A row inside a card: divided by a hairline above it, never a card inside a card. -->
+    <Style x:Key="Row" TargetType="Border">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="{StaticResource RuleBrush}" />
+        <Setter Property="BorderThickness" Value="0,1,0,0" />
+        <Setter Property="Padding" Value="0,8" />
+    </Style>
+
+    <!-- Secondary links that show when their row is hovered or has focus: the row stays quiet otherwise. -->
+    <Style x:Key="HoverLinks" TargetType="StackPanel">
+        <Setter Property="Orientation" Value="Horizontal" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Opacity" Value="0" />
+        <!-- Hidden links can't be clicked by accident; the keyboard still reaches them, and focus shows them. -->
+        <Setter Property="IsHitTestVisible" Value="False" />
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=Border}}" Value="True">
+                <Setter Property="Opacity" Value="1" />
+                <Setter Property="IsHitTestVisible" Value="True" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding IsKeyboardFocusWithin, RelativeSource={RelativeSource AncestorType=Border}}" Value="True">
+                <Setter Property="Opacity" Value="1" />
+                <Setter Property="IsHitTestVisible" Value="True" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+</ResourceDictionary>

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using TechInspector.Core;
+using TechInspector.Core.Health;
 using TechInspector.Core.IO;
 using TechInspector.Core.Settings;
 using TechInspector.Core.Triples;
@@ -44,11 +45,13 @@ namespace TechInspector.Plugin.UI
         /// </summary>
         public void Load(bool keepDrafts = true)
         {
+            _telemetry = null;   // iRacing may have written new telemetry since the last look
             var folder = Plugin.IracingFolder;
             if (folder == null) { Page = null; Reloaded?.Invoke(this, EventArgs.Empty); return; }
             var old = Page;
             var session = SettingsSession.Load(folder, Plugin.Settings.RendererFile, Plugin.Catalog, Plugin.Settings.IgnoredValues);
-            var page = new SettingsPage(session, Plugin.Settings.HiddenIds) { ConfirmDanger = (r, v) => ConfirmDanger?.Invoke(r, v) ?? Task.FromResult(true) };
+            var page = new SettingsPage(session, Plugin.Settings.HiddenIds, Plugin.Goals) { ConfirmDanger = (r, v) => ConfirmDanger?.Invoke(r, v) ?? Task.FromResult(true) };
+            page.TabRequested += tab => TabRequested?.Invoke(tab);
             page.CopyViewFrom(old);
             if (keepDrafts && old != null)
                 foreach (var p in old.Session.Pending)
@@ -191,6 +194,60 @@ namespace TechInspector.Plugin.UI
         {
             Page?.RefreshAll();
             IgnoresChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private TelemetryFolder _telemetry;
+
+        /// <summary>The telemetry folder, scanned once per load.</summary>
+        public TelemetryFolder Telemetry => _telemetry ?? (_telemetry = Plugin.IracingFolder == null ? null : TelemetryFolder.Scan(Plugin.IracingFolder));
+
+        /// <summary>The health check over the loaded files; null when there's no iRacing folder.</summary>
+        public HealthReport Health() => Page == null ? null : HealthCheck.Run(Page.Session, new HealthInputs
+        {
+            DocumentsFolder = Plugin.IracingFolder,
+            InstallFolder = Plugin.InstallFolder,
+            Telemetry = Telemetry,
+        });
+
+        /// <summary>
+        /// How many things the Overview lists to look at: the unusual values as one, a large
+        /// telemetry folder, and each other finding, leaving out the ones the user ignored.
+        /// </summary>
+        public int LookAtCount(HealthReport r)
+        {
+            if (r == null) return 0;
+            var ignored = Plugin.Settings.IgnoredFindings;
+            return (r.Unusual.Count > 0 ? 1 : 0)
+                 + (r.TelemetryLarge && !ignored.Contains("telemetry") ? 1 : 0)
+                 + r.Findings.Count(f => !ignored.Contains(f.Id))
+                 + LayoutFindings().Count(f => !ignored.Contains(f.Id));
+        }
+
+        /// <summary>
+        /// Triple layout problems for the Overview: iRacing changed the saved layout, or a triple
+        /// setup has no saved layout for the guard to protect.
+        /// </summary>
+        public List<Finding> LayoutFindings()
+        {
+            var found = new List<Finding>();
+            var session = Page?.Session;
+            if (session == null || !string.Equals(session.RendererFile, LayoutGuard.MonitorFile, StringComparison.OrdinalIgnoreCase)) return found;
+            var saved = Plugin.Settings.SavedLayout;
+            bool triples = session.Find(LayoutGuard.MonitorFile, "MonitorSetup", "NumMonitors")?.Draft == "3";
+            if (saved.Count > 0 && LayoutGuard.Differences(session, saved).Count > 0)
+                found.Add(new Finding { Id = "layout-changed", Rating = Rating.Concerning, Title = "iRacing changed your triple layout", Detail = "Restore the saved layout before your next race." });
+            else if (saved.Count == 0 && triples)
+                found.Add(new Finding { Id = "layout-unsaved", Rating = Rating.Concerning, Title = "No saved triple layout yet", Detail = "Save it, so Tech Inspector can put it back when iRacing changes it." });
+            return found;
+        }
+
+        /// <summary>Something the health check reads changed outside a reload, such as a telemetry cleanup.</summary>
+        public event EventHandler HealthChanged;
+
+        public void NotifyHealthChanged(bool rescanTelemetry)
+        {
+            if (rescanTelemetry) _telemetry = null;
+            HealthChanged?.Invoke(this, EventArgs.Empty);
         }
 
         public void GoTo(Setting s) { TabRequested?.Invoke("settings"); GoToRequested?.Invoke(s); }

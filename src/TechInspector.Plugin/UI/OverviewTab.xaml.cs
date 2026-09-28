@@ -18,11 +18,11 @@ namespace TechInspector.Plugin.UI
     /// </summary>
     public partial class OverviewTab : UserControl
     {
-        private const int UnusualShown = 5;
+        private const int UnusualShown = 3;
         private static readonly string[] Months = CultureInfo.InvariantCulture.DateTimeFormat.AbbreviatedMonthNames;
 
         private Workspace _ws;
-        private bool _unusualAll, _ignoredOpen;
+        private bool _unusualAll, _ignoredOpen, _passedOpen;
         private TelemetryCard _telemetry;
         private TelemetryDoneCard _telemetryDone;
 
@@ -63,13 +63,9 @@ namespace TechInspector.Plugin.UI
             if (Session != null && string.Equals(Session.RendererFile, Core.Triples.LayoutGuard.MonitorFile, StringComparison.OrdinalIgnoreCase))
             {
                 var saved = plugin.Settings.SavedLayout;
-                int wanted = (int)(Session.Find(Core.Triples.LayoutGuard.MonitorFile, "MonitorSetup", "NumMonitors")?.Draft == "3" ? 3 : 1);
-                if (saved.Count > 0 && Core.Triples.LayoutGuard.Differences(Session, saved).Count > 0)
-                    status.Add(StatusLine.Warn("iRacing changed your triple layout. Restore it on the Triple screens tab."));
-                else if (saved.Count > 0)
+                // Problems with the layout are listed under To look at; the banner only states what's fine.
+                if (saved.Count > 0 && Core.Triples.LayoutGuard.Differences(Session, saved).Count == 0)
                     status.Add(StatusLine.Ok("Triple layout matches your saved layout."));
-                else if (wanted == 3)
-                    status.Add(StatusLine.Warn("No saved triple layout yet. Save it on the Triple screens tab."));
             }
             if (plugin.LastGuardRestore is var gr && gr.HasValue)
             {
@@ -87,7 +83,7 @@ namespace TechInspector.Plugin.UI
                 return;
             }
 
-            var telemetryFolder = _telemetry?.Folder ?? TelemetryFolder.Scan(plugin.IracingFolder);
+            var telemetryFolder = _telemetry?.Folder ?? _ws.Telemetry;
             var report = HealthCheck.Run(Session, new HealthInputs
             {
                 DocumentsFolder = plugin.IracingFolder,
@@ -121,6 +117,12 @@ namespace TechInspector.Plugin.UI
             else if (report.TelemetryLarge)
                 ignoredItems.Add(new IgnoredItem { Id = "telemetry", IsFinding = true, Label = $"Telemetry logging is using {HealthCheck.Gb(telemetryFolder.TotalBytes)}", Sub = "Finding" });
 
+            foreach (var f in _ws.LayoutFindings())
+            {
+                if (Prefs.IgnoredFindings.Contains(f.Id)) ignoredItems.Add(new IgnoredItem { Id = f.Id, IsFinding = true, Label = f.Title, Sub = "Finding" });
+                else cards.Add(new FindingCard { Finding = f, Tab = "triples" });
+            }
+
             foreach (var f in report.Findings)
             {
                 if (Prefs.IgnoredFindings.Contains(f.Id)) ignoredItems.Add(new IgnoredItem { Id = f.Id, IsFinding = true, Label = f.Title, Sub = "Finding" });
@@ -150,8 +152,10 @@ namespace TechInspector.Plugin.UI
             IgnoredList.ItemsSource = ignoredItems;
             IgnoredList.Visibility = _ignoredOpen && ignoredItems.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
 
-            PassedCount.Text = "  " + report.Passed.Count;
+            PassedText.Text = SettingsPage.Plural(report.Passed.Count, "check passed", "checks passed");
+            PassedToggle.Content = _passedOpen ? "Hide" : "Show";
             PassedList.ItemsSource = report.Passed;
+            PassedList.Visibility = _passedOpen ? Visibility.Visible : Visibility.Collapsed;
             AlsoLine.Visibility = report.InertCount > 0 ? Visibility.Visible : Visibility.Collapsed;
             InertLink.Content = SettingsPage.Plural(report.InertCount, "setting has", "settings have") + " no effect right now";
         }
@@ -195,6 +199,7 @@ namespace TechInspector.Plugin.UI
 
         private void ReviewUnusual_Click(object sender, RoutedEventArgs e) => _ws.ShowFilter(SettingsPage.FilterUnusual);
         private void UnusualMore_Click(object sender, RoutedEventArgs e) { _unusualAll = !_unusualAll; Refresh(); }
+        private void PassedToggle_Click(object sender, RoutedEventArgs e) { _passedOpen = !_passedOpen; Refresh(); }
         private void GoToUnusual_Click(object sender, RoutedEventArgs e) => _ws.GoTo(Item<UnusualRow>(sender).Setting);
         private void IgnoreUnusual_Click(object sender, RoutedEventArgs e) => _ws.Ignore(Item<UnusualRow>(sender).Setting);
 
@@ -208,6 +213,7 @@ namespace TechInspector.Plugin.UI
         // ── findings ──
 
         private void FindingSetting_Click(object sender, RoutedEventArgs e) => _ws.GoTo(Item<FindingCard>(sender).Finding.Setting);
+        private void FindingTab_Click(object sender, RoutedEventArgs e) => _ws.ShowTab(Item<FindingCard>(sender).Tab);
         private void IgnoreFinding_Click(object sender, RoutedEventArgs e) => _ws.IgnoreFinding((string)((FrameworkElement)sender).Tag);
         private void Inert_Click(object sender, RoutedEventArgs e) => _ws.ShowFilter(SettingsPage.FilterInert);
         private void IgnoredToggle_Click(object sender, RoutedEventArgs e) { _ignoredOpen = !_ignoredOpen; Refresh(); }
@@ -254,6 +260,7 @@ namespace TechInspector.Plugin.UI
             };
             _telemetry = null;
             Refresh();
+            _ws.NotifyHealthChanged(rescanTelemetry: true);
         }
 
         private async void TelemetryUndo_Click(object sender, RoutedEventArgs e)
@@ -268,6 +275,7 @@ namespace TechInspector.Plugin.UI
             _telemetryDone = null;
             _telemetry = null;
             Refresh();
+            _ws.NotifyHealthChanged(rescanTelemetry: true);
         }
     }
 }

@@ -5,15 +5,15 @@
              xmlns:iconpacks="clr-namespace:MahApps.Metro.IconPacks;assembly=MahApps.Metro.IconPacks.Material"
              Visibility="Collapsed">
     <UserControl.Resources>
-        <Style x:Key="Muted" TargetType="TextBlock">
-            <Setter Property="Opacity" Value="0.62" />
-            <Setter Property="FontSize" Value="12.5" />
-            <Setter Property="TextWrapping" Value="Wrap" />
-        </Style>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/TechInspector.Plugin;component/UI/Theme.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </UserControl.Resources>
 
     <!-- Pinned to the bottom of the page on every tab: SimHub's own sticky-bar colour. -->
-    <Border Background="{DynamicResource SHStickyBarBackgroundBrush}" BorderBrush="#33808080" BorderThickness="0,1,0,0">
+    <Border Background="{DynamicResource SHStickyBarBackgroundBrush}" BorderBrush="{StaticResource RuleBrush}" BorderThickness="0,1,0,0">
         <StackPanel>
             <!-- Review: exactly which lines change. -->
             <StackPanel x:Name="ReviewPanel" Visibility="Collapsed" Margin="16,12,16,4">
@@ -29,7 +29,7 @@
                 <ItemsControl x:Name="ReviewList">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border Background="#1A808080" Padding="10,6" Margin="0,0,0,3" CornerRadius="3">
+                            <Border Background="{StaticResource CardBrush}" Padding="10,6" Margin="0,0,0,3" CornerRadius="3">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="180" /><ColumnDefinition Width="*" /><ColumnDefinition Width="170" /><ColumnDefinition Width="170" />
@@ -53,8 +53,8 @@
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <Ellipse x:Name="BarDot" Width="8" Height="8" Fill="{DynamicResource AccentColorBrush}" Margin="0,0,10,0" VerticalAlignment="Center" />
-                    <iconpacks:PackIconMaterial x:Name="BarDone" Kind="CheckCircle" Foreground="#FF7DDC6A" Width="16" Height="16" Margin="0,0,8,0" Visibility="Collapsed" VerticalAlignment="Center" />
-                    <iconpacks:PackIconMaterial x:Name="BarError" Kind="CloseCircle" Foreground="#FFE35D5D" Width="16" Height="16" Margin="0,0,8,0" Visibility="Collapsed" VerticalAlignment="Center" />
+                    <iconpacks:PackIconMaterial x:Name="BarDone" Kind="CheckCircle" Foreground="{StaticResource OkBrush}" Width="16" Height="16" Margin="0,0,8,0" Visibility="Collapsed" VerticalAlignment="Center" />
+                    <iconpacks:PackIconMaterial x:Name="BarError" Kind="CloseCircle" Foreground="{StaticResource DangerBrush}" Width="16" Height="16" Margin="0,0,8,0" Visibility="Collapsed" VerticalAlignment="Center" />
                     <TextBlock x:Name="BarTitle" FontWeight="SemiBold" VerticalAlignment="Center" />
                     <TextBlock x:Name="BarNote" Style="{StaticResource Muted}" Margin="14,0,0,0" VerticalAlignment="Center" />
                     <styles:SHLinkButtonSmall x:Name="ReviewLink" Content="Review" Click="Review_Click" Margin="14,0,0,0" VerticalAlignment="Center" />

@@ -7,6 +7,9 @@
 
   <data name="TechInspector_Title" xml:space="preserve"><value>Tech Inspector</value></data>
   <data name="TechInspector_ByMaker" xml:space="preserve"><value>by Simpatico Sim Shop</value></data>
+  <data name="TechInspector_VerdictClear" xml:space="preserve"><value>Inspection: all clear</value></data>
+  <data name="TechInspector_VerdictLook" xml:space="preserve"><value>Inspection: {0} to look at</value></data>
+  <data name="TechInspector_VerdictTip" xml:space="preserve"><value>Open the Overview</value></data>
   <data name="TechInspector_TabOverview" xml:space="preserve"><value>Overview</value></data>
   <data name="TechInspector_TabSettings" xml:space="preserve"><value>Settings</value></data>
   <data name="TechInspector_TabBackups" xml:space="preserve">

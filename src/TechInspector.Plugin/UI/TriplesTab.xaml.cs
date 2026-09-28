@@ -67,6 +67,9 @@ namespace TechInspector.Plugin.UI
 
         public void Attach(Workspace ws)
         {
+            foreach (var canvas in new[] { TopView, FrontView })
+                if (canvas.Parent is Viewbox vb)
+                    vb.SizeChanged += (o, e) => { if (Math.Abs(e.NewSize.Width - e.PreviousSize.Width) > 24) { RenderTop(); RenderFront(); } };
             _ws = ws;
             _ws.Reloaded += (s, e) => { BuildControls(); Invalidate(); };
             _ws.DraftsChanged += (s, e) => Invalidate();
@@ -139,10 +142,9 @@ namespace TechInspector.Plugin.UI
                     : "Saved layout matches the file. You're told if iRacing changes it."));
             }
 
+            // Fewer screens than the layout needs is explained in the "Window on your desktop" card, not repeated here.
             int wanted = (int)Num(M("NumMonitors")?.Draft);
-            if (wanted == 3 && _screens.Count < 3)
-                lines.Add(StatusLine.Warn($"Windows sees {SettingsPage.Plural(_screens.Count, "screen", "screens")}. Turn the side screens on before launching iRacing, then detect."));
-            else if (wanted == 3)
+            if (wanted == 3 && _screens.Count >= 3)
             {
                 var span = Span();
                 bool covers = Num(W("windowedXPos")?.Draft) == span.X && Num(W("windowedWidth")?.Draft) == span.Width &&
@@ -154,6 +156,7 @@ namespace TechInspector.Plugin.UI
                     AddBannerButton("Fit window to screens", Fit_Click);
                 }
             }
+            if (lines.Any(l => l.Icon == PackIconMaterialKind.Alert)) BannerIcon.Kind = PackIconMaterialKind.Alert;
             BannerLines.ItemsSource = lines;
         }
 
@@ -215,6 +218,17 @@ namespace TechInspector.Plugin.UI
         private static readonly Brush LineBrush = Freeze(new SolidColorBrush(Color.FromArgb(0x66, 0x90, 0x90, 0x90)));
         private static Brush Freeze(Brush b) { b.Freeze(); return b; }
 
+        /// <summary>
+        /// How much to enlarge labels on a drawing its Viewbox has shrunk, so they stay readable
+        /// in a narrow pane (up to 1.6 times; never smaller than drawn).
+        /// </summary>
+        private static double LabelBoost(Canvas c)
+        {
+            if (!(c.Parent is Viewbox vb) || vb.ActualWidth <= 0 || c.Width <= 0) return 1;
+            double scale = vb.ActualWidth / c.Width;
+            return scale >= 1 ? 1 : Math.Min(1.6, 1 / scale);
+        }
+
         private void RenderTop()
         {
             var c = TopView;
@@ -261,14 +275,16 @@ namespace TechInspector.Plugin.UI
             var centre = To(new Pt(0, g.In.ViewingDist));
             c.Children.Add(new Line { X1 = eye.X, Y1 = eye.Y, X2 = centre.X, Y2 = centre.Y, Stroke = LineBrush, StrokeThickness = 1, StrokeDashArray = new DoubleCollection { 3, 3 } });
 
-            Label(c, $"{Math.Round(g.In.ViewingDist)} mm to centre", eye.X, eye.Y + 34, 12, 0.7);
-            Label(c, "you", eye.X, eye.Y + 18, 12, 0.7);
-            Label(c, $"{Math.Round(g.Fov)}°", eye.X, eye.Y - 30, 13, 1, Accent);
+            // Under the eye dot, the labels step down as they're enlarged; the figure inside the arc grows least.
+            double b = LabelBoost(c);
+            Label(c, "you", eye.X, eye.Y + 12 + 6 * b, 12, 0.7);
+            Label(c, $"{Math.Round(g.In.ViewingDist)} mm to centre", eye.X, eye.Y + 14 + 20 * Math.Min(b, 1.3), 12, 0.7, maxBoost: 1.3);
+            Label(c, $"{Math.Round(g.Fov)}°", eye.X, eye.Y - 28, 13, 1, Accent, maxBoost: 1.15);
             if (g.In.NumMonitors == 3)
             {
                 var hinge = To(g.Right.A);
                 double dx = hinge.X - eye.X, dy = hinge.Y - eye.Y, dl = Math.Max(1, Math.Sqrt(dx * dx + dy * dy));
-                Label(c, $"{Math.Round(g.In.ScreenAngles)}°", hinge.X + dx / dl * 20, hinge.Y + dy / dl * 20 - 8, 12, 0.8);
+                Label(c, $"{Math.Round(g.In.ScreenAngles)}°", hinge.X + dx / dl * 20, hinge.Y + dy / dl * 20 - 8, 12, 0.8, maxBoost: 1.3);
             }
 
             Handle(c, eye, "eye", "Eyes to centre screen. Drag, or use the arrow keys.");
@@ -281,13 +297,15 @@ namespace TechInspector.Plugin.UI
                 Readout("Ideal side angle", g.Ideal, g0.Ideal, null, g.IdealIsClamped ? " (max)" : "");
         }
 
-        private static void Label(Canvas c, string text, double x, double y, double size, double opacity, Brush fg = null)
+        /// <summary>A centred label. It grows with LabelBoost up to maxBoost; 1 keeps it at its drawn size.</summary>
+        private static void Label(Canvas c, string text, double x, double y, double size, double opacity, Brush fg = null, double maxBoost = 1.6)
         {
-            var t = new TextBlock { Text = text, FontSize = size, Opacity = opacity };
+            var t = new TextBlock { Text = text, FontSize = size * Math.Min(maxBoost, LabelBoost(c)), Opacity = opacity };
             if (fg != null) t.Foreground = fg;
             t.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
             Canvas.SetLeft(t, x - t.DesiredSize.Width / 2);
-            Canvas.SetTop(t, y - t.DesiredSize.Height / 2);
+            // Never past the drawing's edges, which clip.
+            Canvas.SetTop(t, Math.Max(0, Math.Min(y - t.DesiredSize.Height / 2, c.Height - t.DesiredSize.Height)));
             c.Children.Add(t);
         }
 
@@ -382,8 +400,8 @@ namespace TechInspector.Plugin.UI
                 var box = new Rectangle { Width = q.Width, Height = q.Height, Fill = new SolidColorBrush(Color.FromArgb(0x22, 0x80, 0x80, 0x80)), Stroke = LineBrush };
                 Canvas.SetLeft(box, q.X); Canvas.SetTop(box, q.Y); c.Children.Add(box);
                 var s = _screens[i];
-                Label(c, s.Primary ? $"Screen {i + 1} (main)" : $"Screen {i + 1}", q.X + q.Width / 2, q.Y + q.Height / 2 - 8, 11.5, 0.9);
-                Label(c, $"{s.Bounds.Width} × {s.Bounds.Height}", q.X + q.Width / 2, q.Y + q.Height / 2 + 8, 11, 0.6);
+                Label(c, s.Primary ? $"Screen {i + 1} (main)" : $"Screen {i + 1}", q.X + q.Width / 2, q.Y + q.Height / 2 - 8, 11.5, 0.9, maxBoost: 1);
+                Label(c, $"{s.Bounds.Width} × {s.Bounds.Height}", q.X + q.Width / 2, q.Y + q.Height / 2 + 8, 11, 0.6, maxBoost: 1);
             }
             if (win != win0)
             {
@@ -394,8 +412,8 @@ namespace TechInspector.Plugin.UI
             var w = T(win);
             var outline = new Rectangle { Width = w.Width, Height = w.Height, Stroke = Accent, StrokeThickness = 2.5 };
             Canvas.SetLeft(outline, w.X); Canvas.SetTop(outline, w.Y); c.Children.Add(outline);
-            Label(c, "x " + Minus(win.X), w.X + 18, w.Y - 9, 11, 0.7);
-            Label(c, "x " + Minus(win.Right), w.Right - 22, w.Y - 9, 11, 0.7);
+            Label(c, "x " + Minus(win.X), w.X + 18, w.Y - 9, 11, 0.7, maxBoost: 1);
+            Label(c, "x " + Minus(win.Right), w.Right - 22, w.Y - 9, 11, 0.7, maxBoost: 1);
 
             var span = Span();
             if (_screens.Count < 3 && Num(M("NumMonitors")?.Draft) == 3)
@@ -410,23 +428,47 @@ namespace TechInspector.Plugin.UI
 
         // ── controls ──
 
+        /// <summary>Whether "Rendering and window" was left open, kept across reloads.</summary>
+        private bool _moreOpen;
+
+        /// <summary>
+        /// The layout itself (screens and position) as cards; rendering and the window, which people
+        /// set once, wait behind one closed expander.
+        /// </summary>
         private void BuildControls()
         {
             ControlCards.Items.Clear();
             if (!IsMonitorFile) return;
+            StackPanel more = null;
             foreach (var (title, keys) in Cards)
             {
-                var card = new Border { Style = (Style)FindResource("Card") };
+                var rows = keys.Select(S).Where(s => s != null).Select(s => _ws.Page.RowFor(s)).Where(r => r != null).ToList();
+                if (rows.Count == 0) continue;
+                bool secondary = title == "Rendering" || title == "Window";
                 var stack = new StackPanel();
-                stack.Children.Add(new TextBlock { Text = title, Style = (Style)FindResource("CardTitle") });
-                foreach (var key in keys)
+                stack.Children.Add(new TextBlock { Text = title, Style = (Style)FindResource(secondary ? "GroupTitle" : "CardTitle") });
+                foreach (var row in rows) stack.Children.Add(Row(row));
+                if (!secondary)
                 {
-                    var s = S(key);
-                    var row = s == null ? null : _ws.Page.RowFor(s);
-                    if (row != null) stack.Children.Add(Row(row));
+                    ControlCards.Items.Add(new Border { Style = (Style)FindResource("Card"), Child = stack });
+                    continue;
                 }
-                card.Child = stack;
-                ControlCards.Items.Add(card);
+                if (more == null) more = new StackPanel { Margin = new Thickness(34, 0, 14, 8) };
+                else stack.Margin = new Thickness(0, 12, 0, 0);
+                more.Children.Add(stack);
+            }
+            if (more != null)
+            {
+                var expander = new SimHub.Plugins.Styles.SHExpander
+                {
+                    Header = new TextBlock { Text = "Rendering and window", FontSize = 14 },
+                    Content = more,
+                    IsExpanded = _moreOpen,
+                    Margin = new Thickness(0, 0, 0, 8),
+                };
+                expander.Expanded += (s, e) => _moreOpen = true;
+                expander.Collapsed += (s, e) => _moreOpen = false;
+                ControlCards.Items.Add(expander);
             }
         }
 
@@ -448,7 +490,7 @@ namespace TechInspector.Plugin.UI
             var key = row.Setting.Key;
             if (key == "ScreenAngles")
             {
-                var hint = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 4, 0, 0) };
+                var hint = new WrapPanel { Margin = new Thickness(0, 4, 0, 0) };   // wraps "Use N°" under the text in a narrow pane
                 _angleHint = new TextBlock { FontSize = 12.5, TextWrapping = TextWrapping.Wrap, VerticalAlignment = VerticalAlignment.Center };
                 _angleUse = new SHLinkButtonSmall { Margin = new Thickness(8, 0, 0, 0), Visibility = Visibility.Collapsed };
                 _angleUse.Click += (s, e) => SetNum("MonitorSetup|ScreenAngles", Geo(true).Ideal);

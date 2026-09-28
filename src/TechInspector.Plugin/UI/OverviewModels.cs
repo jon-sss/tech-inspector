@@ -47,6 +47,10 @@ namespace TechInspector.Plugin.UI
         public string Title => Finding.Title;
         public string Detail => Finding.Detail;
         public bool HasSetting => Finding.Setting != null;
+        /// <summary>For findings that live on another tab (the triple layout): the tab to open.</summary>
+        public string Tab { get; set; }
+        public bool HasTab => Tab != null;
+        public string TabText => Tab == "triples" ? "Open Triple screens" : "Open";
         public PackIconMaterialKind Icon => Finding.Rating == Rating.Bad ? PackIconMaterialKind.CloseCircle : Finding.Rating == Rating.Good ? PackIconMaterialKind.CheckCircle : PackIconMaterialKind.Alert;
         public Brush IconBrush => Finding.Rating == Rating.Bad ? StatusLine.BadBrush : Finding.Rating == Rating.Good ? StatusLine.OkBrush : StatusLine.WarnBrush;
         public string RatingName => Finding.Rating.ToString();

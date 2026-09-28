@@ -5,29 +5,29 @@
              xmlns:iconpacks="clr-namespace:MahApps.Metro.IconPacks;assembly=MahApps.Metro.IconPacks.Material"
              xmlns:ui="clr-namespace:TechInspector.Plugin.UI">
     <UserControl.Resources>
+        <ResourceDictionary>
+        <ResourceDictionary.MergedDictionaries>
+            <ResourceDictionary Source="/TechInspector.Plugin;component/UI/Theme.xaml" />
+        </ResourceDictionary.MergedDictionaries>
         <ui:BoolToVisibility x:Key="Visible" />
-        <Style x:Key="Muted" TargetType="TextBlock">
-            <Setter Property="Opacity" Value="0.62" />
-            <Setter Property="FontSize" Value="12.5" />
-            <Setter Property="TextWrapping" Value="Wrap" />
-        </Style>
-        <Style x:Key="Card" TargetType="Border">
-            <Setter Property="Background" Value="#1A808080" />
-            <Setter Property="CornerRadius" Value="4" />
-            <Setter Property="Padding" Value="14,10" />
-            <Setter Property="Margin" Value="0,0,0,8" />
-        </Style>
         <Style x:Key="CardTitle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="14" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Margin" Value="0,0,0,4" />
         </Style>
+        <Style x:Key="GroupTitle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12.5" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Opacity" Value="0.62" />
+            <Setter Property="Margin" Value="0,2,0,0" />
+        </Style>
+        </ResourceDictionary>
     </UserControl.Resources>
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="0,4,14,24">
+        <StackPanel Margin="0,4,14,24" MaxWidth="{StaticResource ColumnWidth}">
             <!-- Banner: whether the layout is safe, and whether the window spans the screens. -->
-            <Border x:Name="Banner" Background="#FF375963" CornerRadius="3" Padding="18,14" Margin="0,0,0,14">
+            <Border x:Name="Banner" Background="#FF375963" CornerRadius="4" Padding="18,14" Margin="0,0,0,14">
                 <DockPanel>
                     <StackPanel x:Name="BannerActions" DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" />
                     <iconpacks:PackIconMaterial x:Name="BannerIcon" DockPanel.Dock="Left" Kind="Information" Foreground="White" Width="28" Height="28" Margin="0,0,16,0" VerticalAlignment="Top" />
@@ -71,7 +71,7 @@
                             <Viewbox Stretch="Uniform" MaxHeight="360">
                                 <Canvas x:Name="TopView" Width="640" Height="330" Background="Transparent" ClipToBounds="True" />
                             </Viewbox>
-                            <Rectangle Height="1" Fill="#22808080" Margin="0,8,0,8" />
+                            <Rectangle Height="1" Fill="{StaticResource RuleBrush}" Margin="0,8,0,8" />
                             <UniformGrid x:Name="Readouts" Columns="3" />
                         </StackPanel>
                     </Border>
@@ -85,10 +85,10 @@
                             <Viewbox Stretch="Uniform" MaxHeight="170">
                                 <Canvas x:Name="FrontView" Width="640" Height="150" ClipToBounds="True" />
                             </Viewbox>
-                            <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
-                                <iconpacks:PackIconMaterial x:Name="FrontIcon" Kind="Information" Width="14" Height="14" Margin="0,1,8,0" />
+                            <DockPanel Margin="0,6,0,0">
+                                <iconpacks:PackIconMaterial x:Name="FrontIcon" DockPanel.Dock="Left" Kind="Information" Width="14" Height="14" Margin="0,1,8,0" VerticalAlignment="Top" />
                                 <TextBlock x:Name="FrontNote" Style="{StaticResource Muted}" />
-                            </StackPanel>
+                            </DockPanel>
                         </StackPanel>
                     </Border>
                 </StackPanel>
@@ -116,7 +116,7 @@
                     <ItemsControl x:Name="GuardRows">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Border Background="#14000000" CornerRadius="3" Padding="12,6" Margin="0,0,0,3">
+                                <Border Style="{StaticResource Row}" Padding="12,6">
                                     <Grid>
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="160" /><ColumnDefinition Width="160" /><ColumnDefinition Width="30" /></Grid.ColumnDefinitions>
                                         <TextBlock Text="{Binding Label}" />

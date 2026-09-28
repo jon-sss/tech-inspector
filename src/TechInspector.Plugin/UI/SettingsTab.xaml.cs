@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
@@ -34,7 +35,7 @@ namespace TechInspector.Plugin.UI
             _ws.ConfirmDanger = ConfirmDangerAsync;
             _ws.Reloaded += (s, e) => DataContext = _ws.Page;
             _ws.GoToRequested += GoTo;
-            _ws.FilterRequested += f => { if (Page != null) { Page.Query = ""; Page.Filter = f; } };
+            _ws.FilterRequested += f => Page?.SelectList(f);
             LoadModes();
             DataContext = _ws.Page;
         }
@@ -50,7 +51,7 @@ namespace TechInspector.Plugin.UI
                 var names = new[] { ("Monitor", "rendererDX11Monitor.ini"), ("OpenXR", "rendererDX11OpenXR.ini"), ("Oculus", "rendererDX11Oculus.ini"), ("OpenVR", "rendererDX11OpenVR.ini"), ("Template", "rendererDX11.ini") };
                 foreach (var (label, file) in names)
                     if (File.Exists(Path.Combine(folder, file)))
-                        ModeBox.Items.Add(new ComboBoxItem { Content = $"{label} · {file}", Tag = file });
+                        ModeBox.Items.Add(new ComboBoxItem { Content = label, Tag = file, ToolTip = file });
             }
             var want = _ws.Plugin.Settings.RendererFile;
             ModeBox.SelectedItem = ModeBox.Items.OfType<ComboBoxItem>().FirstOrDefault(i => (string)i.Tag == want) ?? ModeBox.Items.OfType<ComboBoxItem>().FirstOrDefault();
@@ -135,17 +136,66 @@ namespace TechInspector.Plugin.UI
         private void MoreLink_Click(object sender, RoutedEventArgs e) => Page.ToggleMore(Item<MoreLinkItem>(sender).Card);
         private void ShowHidden_Click(object sender, RoutedEventArgs e) => Page.ShowHidden(Item<SectionFootItem>(sender).Card);
         private void ShowExpert_Click(object sender, RoutedEventArgs e) => Page.ShowExpert = true;
+        private void ShowMore_Click(object sender, RoutedEventArgs e) => Page.ShowMore = true;
         private void Reset_Click(object sender, RoutedEventArgs e) => Page.Reset(Item<SettingRow>(sender));
         private void Hide_Click(object sender, RoutedEventArgs e) { Page.Hide(Item<SettingRow>(sender)); _ws.Plugin.SaveSettings(); }
 
-        private void OpenFile_Click(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// The View menu: the three ways to see more, then the files themselves. Kept out of the
+        /// toolbar so the page leads with what most people came for.
+        /// </summary>
+        private void View_Click(object sender, RoutedEventArgs e)
         {
-            if (_ws.Plugin.IracingFolder != null) TechInspectorPlugin.OpenPath(Path.Combine(_ws.Plugin.IracingFolder, RendererFile));
+            if (Page == null) return;
+            var menu = new ContextMenu { PlacementTarget = ViewButton, Placement = PlacementMode.Bottom };
+            MenuItem Toggle(string header, string tip, bool on, Action<bool> set)
+            {
+                var m = new MenuItem { Header = header, IsCheckable = true, IsChecked = on, ToolTip = tip };
+                m.Click += (s, a) => set(m.IsChecked);
+                return m;
+            }
+            MenuItem Action(string header, Action run)
+            {
+                var m = new MenuItem { Header = header };
+                m.Click += (s, a) => run();
+                return m;
+            }
+            menu.Items.Add(Toggle("Show more settings", "Adds the settings drivers change less often to each section.", Page.ShowMore, v => Page.ShowMore = v));
+            menu.Items.Add(Toggle("Show expert settings", "Settings that can break something. Changing one asks first.", Page.ShowExpert, v => Page.ShowExpert = v));
+            menu.Items.Add(Toggle("Show ini lines", "Each setting's line in the file, and where its description came from.", Page.ShowIniLines, v => Page.ShowIniLines = v));
+            menu.Items.Add(new Separator());
+            var folder = _ws.Plugin.IracingFolder;
+            if (folder != null)
+            {
+                menu.Items.Add(Action("Open " + RendererFile, () => TechInspectorPlugin.OpenPath(Path.Combine(folder, RendererFile))));
+                menu.Items.Add(Action("Open the iRacing folder", () => TechInspectorPlugin.OpenPath(folder)));
+            }
+            menu.IsOpen = true;
         }
 
-        private void OpenFolder_Click(object sender, RoutedEventArgs e)
+        /// <summary>A rail entry that opens another tab doesn't stay selected: the rail goes back to where it was.</summary>
+        private void Rail_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (_ws.Plugin.IracingFolder != null) TechInspectorPlugin.OpenPath(_ws.Plugin.IracingFolder);
+            if (Rail.SelectedItem is GoalNav g && g.Tab != null)
+            {
+                var back = e.RemovedItems.Count > 0 ? e.RemovedItems[0] : Page?.Selected;
+                Dispatcher.BeginInvoke(new Action(() => Rail.SelectedItem = back));
+                return;
+            }
+            Scroller.ScrollToTop();
+        }
+
+        /// <summary>"Everything in Graphics": opens the section in All settings and scrolls to it.</summary>
+        private void Section_Click(object sender, RoutedEventArgs e)
+        {
+            var link = Item<SectionLink>(sender);
+            if (link == null || Page == null) return;
+            Page.OpenSection(link.Info);
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                var card = Page.Areas.SelectMany(a => a.Cards).FirstOrDefault(c => c.Info == link.Info);
+                if (card != null) Find(this, card)?.BringIntoView();
+            }), DispatcherPriority.Loaded);
         }
     }
 }
