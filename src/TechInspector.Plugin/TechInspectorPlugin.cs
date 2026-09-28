@@ -20,6 +20,7 @@ namespace TechInspector.Plugin
         public const string SimProcess = "iRacingSim64DX11";
         public const string ShopUrl = "https://simpaticosims.com/";
         public const string DonateUrl = "https://ko-fi.com/simpaticosimshop";
+        public const string ContactEmail = "info@simpaticosims.com";
         public const string SourceUrl = "https://github.com/jon-sss/tech-inspector";
 
         private static ImageSource _icon;

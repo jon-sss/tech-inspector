@@ -57,9 +57,13 @@ The license covers the code. It doesn't grant any rights to the Simpatico Sim Sh
 
 Bug reports and ideas are welcome in [Issues](https://github.com/jon-sss/tech-inspector/issues). By opening a pull request, you agree that Simpatico Sim Shop may use your contribution in Tech Inspector under any license, including this one.
 
+## Contact
+
+Questions, feedback or partnership enquiries: [info@simpaticosims.com](mailto:info@simpaticosims.com). Bugs are best reported in [Issues](https://github.com/jon-sss/tech-inspector/issues).
+
 ## Support development
 
-Tech Inspector is free. If it's useful to you, a donation on [Ko-fi](https://ko-fi.com/simpaticosimshop) helps keep it current with each iRacing season.
+Tech Inspector is free, and built and maintained by one person at Simpatico Sim Shop. If it's useful to you, a donation on [Ko-fi](https://ko-fi.com/simpaticosimshop) helps keep it current with each iRacing season, and so does a visit to [the shop](https://simpaticosims.com/).
 
 ---
 

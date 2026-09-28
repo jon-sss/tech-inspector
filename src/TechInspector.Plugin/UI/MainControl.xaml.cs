@@ -100,6 +100,8 @@ namespace TechInspector.Plugin.UI
 
         private void Donate_Click(object sender, RoutedEventArgs e) => TechInspectorPlugin.OpenUrl(TechInspectorPlugin.DonateUrl);
 
+        private void Contact_Click(object sender, RoutedEventArgs e) => TechInspectorPlugin.OpenUrl("mailto:" + TechInspectorPlugin.ContactEmail);
+
         private void Source_Click(object sender, RoutedEventArgs e) => TechInspectorPlugin.OpenUrl(TechInspectorPlugin.SourceUrl);
 
         private void Issues_Click(object sender, RoutedEventArgs e) => TechInspectorPlugin.OpenUrl(TechInspectorPlugin.SourceUrl + "/issues");

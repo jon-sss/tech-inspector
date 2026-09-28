@@ -7,6 +7,13 @@
 
   <data name="TechInspector_Title" xml:space="preserve"><value>Tech Inspector</value></data>
   <data name="TechInspector_ByMaker" xml:space="preserve"><value>by Simpatico Sim Shop</value></data>
+  <data name="TechInspector_AskPrefix" xml:space="preserve"><value>Please consider</value></data>
+  <data name="TechInspector_AskDonate" xml:space="preserve"><value>donating</value></data>
+  <data name="TechInspector_AskDonateTip" xml:space="preserve"><value>Ko-fi opens in your browser.</value></data>
+  <data name="TechInspector_AskOr" xml:space="preserve"><value>or</value></data>
+  <data name="TechInspector_AskShop" xml:space="preserve"><value>visiting the shop</value></data>
+  <data name="TechInspector_ContactText" xml:space="preserve"><value>Questions, feedback or partnerships:</value></data>
+  <data name="TechInspector_ContactTip" xml:space="preserve"><value>Opens your email app.</value></data>
   <data name="TechInspector_VerdictClear" xml:space="preserve"><value>Inspection: all clear</value></data>
   <data name="TechInspector_VerdictLook" xml:space="preserve"><value>Inspection: {0} to look at</value></data>
   <data name="TechInspector_VerdictTip" xml:space="preserve"><value>Open the Overview</value></data>
@@ -44,7 +51,7 @@
   <data name="TechInspector_ViewSource" xml:space="preserve"><value>View on GitHub</value></data>
   <data name="TechInspector_ReportProblem" xml:space="preserve"><value>Report a problem</value></data>
   <data name="TechInspector_Support" xml:space="preserve"><value>Support development</value></data>
-  <data name="TechInspector_SupportText" xml:space="preserve"><value>Tech Inspector is free. If it's useful to you, a donation helps keep it current with each iRacing season. Ko-fi opens in your browser.</value></data>
+  <data name="TechInspector_SupportText" xml:space="preserve"><value>Tech Inspector is free, and built and maintained by one person at Simpatico Sim Shop. Donations keep it current with each iRacing season. Ko-fi opens in your browser.</value></data>
   <data name="TechInspector_DonateButton" xml:space="preserve"><value>Donate on Ko-fi</value></data>
   <data name="TechInspector_Disclaimer" xml:space="preserve"><value>Not affiliated with iRacing.com Motorsport Simulations or SimHub. iRacing is a trademark of iRacing.com Motorsport Simulations, LLC.</value></data>
 </root>

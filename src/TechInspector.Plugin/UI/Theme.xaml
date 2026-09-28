@@ -14,6 +14,8 @@
     <SolidColorBrush x:Key="WarnBrush" Color="#E8A33A" />
     <SolidColorBrush x:Key="OkBrush" Color="#4CAF50" />
     <SolidColorBrush x:Key="DangerBrush" Color="#E35D5D" />
+    <!-- SimHub's link colour, measured from its link buttons, for links set inside a sentence. -->
+    <SolidColorBrush x:Key="LinkBrush" Color="#06B0F4" />
 
     <Style x:Key="Muted" TargetType="TextBlock">
         <Setter Property="Opacity" Value="0.62" />
@@ -37,6 +39,18 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+
+    <!-- A link inside running text: same size and baseline as the words around it, underlined on hover. -->
+    <Style x:Key="InlineLink" TargetType="Hyperlink">
+        <Setter Property="Foreground" Value="{StaticResource LinkBrush}" />
+        <Setter Property="TextDecorations" Value="{x:Null}" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="TextDecorations" Value="Underline" />
+            </Trigger>
+        </Style.Triggers>
     </Style>
 
     <Style x:Key="Card" TargetType="Border">
