@@ -44,7 +44,6 @@
   <data name="TechInspector_Touch4" xml:space="preserve"><value>Never changes the sim or its install folder.</value></data>
   <data name="TechInspector_Touch5" xml:space="preserve"><value>Doesn't connect to the internet. Links open in your browser only when you click them.</value></data>
   <data name="TechInspector_MadeBy" xml:space="preserve"><value>Made by Simpatico Sim Shop</value></data>
-  <data name="TechInspector_ShopText" xml:space="preserve"><value>Sim racing gear, for sim racers, by sim racers. Tech Inspector is free, and made by the same people.</value></data>
   <data name="TechInspector_VisitShop" xml:space="preserve"><value>Visit simpaticosims.com</value></data>
   <data name="TechInspector_Source" xml:space="preserve"><value>Source code</value></data>
   <data name="TechInspector_SourceText" xml:space="preserve"><value>The source is on GitHub under the PolyForm Noncommercial license: free to read, build and change for non-commercial use.</value></data>

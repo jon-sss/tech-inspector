@@ -118,9 +118,7 @@
                                 <Image Source="/TechInspector.Plugin;component/Assets/simpatico-logo.png" Width="104" RenderOptions.BitmapScalingMode="HighQuality" />
                             </Border>
                             <StackPanel VerticalAlignment="Center">
-                                <TextBlock TextWrapping="Wrap"
-                                           Text="{SLoc TechInspector_ShopText, 'Sim racing gear, for sim racers, by sim racers. Tech Inspector is free, and made by the same people.'}" />
-                                <styles:SHLinkButton Click="Shop_Click" HorizontalAlignment="Left" Margin="0,6,0,0" Content="{SLoc TechInspector_VisitShop, 'Visit simpaticosims.com'}" />
+                                <styles:SHLinkButton Click="Shop_Click" HorizontalAlignment="Left" Content="{SLoc TechInspector_VisitShop, 'Visit simpaticosims.com'}" />
                                 <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
                                     <TextBlock Text="{SLoc TechInspector_ContactText, 'Questions, feedback or partnerships:'}" VerticalAlignment="Center" Margin="0,0,6,0" />
                                     <styles:SHLinkButton Click="Contact_Click" Content="info@simpaticosims.com" VerticalAlignment="Center"
