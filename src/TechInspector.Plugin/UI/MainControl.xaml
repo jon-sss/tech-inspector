@@ -17,9 +17,10 @@
     </UserControl.Resources>
 
     <DockPanel Margin="0,0,0,0">
-        <!-- Header line. SimHub shows the plugin name above the page, so this holds the maker on the
-             left and the inspection verdict on the right, which opens the Overview. -->
-        <DockPanel DockPanel.Dock="Top" Margin="2,0,2,8" MaxWidth="{StaticResource ColumnWidth}">
+        <!-- Header line: a subtitle to the plugin name SimHub draws above the page, so it runs full
+             width from the same left edge. The maker's mark and name, one quiet support line, and on
+             the right the inspection verdict, which opens the Overview. -->
+        <DockPanel DockPanel.Dock="Top" Margin="4,0,2,14">
             <Button x:Name="Verdict" DockPanel.Dock="Right" Click="Verdict_Click" Cursor="Hand" Visibility="Collapsed"
                     ToolTip="{SLoc TechInspector_VerdictTip, 'Open the Overview'}">
                 <Button.Template>
@@ -41,16 +42,19 @@
             </Button>
             <!-- The maker, then one quiet ask with two links: seen on every tab, smaller than About's button. -->
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <Image Source="/TechInspector.Plugin;component/Assets/simpatico-mark.png" Height="22" Margin="0,0,10,0" VerticalAlignment="Center"
+                       RenderOptions.BitmapScalingMode="HighQuality" Cursor="Hand" MouseLeftButtonUp="Logo_Click"
+                       ToolTip="simpaticosims.com" AutomationProperties.Name="Simpatico Sim Shop" />
                 <TextBlock Text="{SLoc TechInspector_ByMaker, 'by Simpatico Sim Shop'}" Style="{StaticResource Muted}" VerticalAlignment="Center" />
                 <TextBlock Text="·" Style="{StaticResource Muted}" VerticalAlignment="Center" Margin="10,0,10,0" />
                 <iconpacks:PackIconMaterial Kind="HeartOutline" Width="12" Height="12" Opacity="0.62" Margin="0,1,7,0" VerticalAlignment="Center" />
                 <TextBlock Text="{SLoc TechInspector_AskPrefix, 'Please consider'}" Style="{StaticResource Muted}" VerticalAlignment="Center" Margin="0,0,4,0" />
                 <TextBlock FontSize="12.5" VerticalAlignment="Center">
-                    <Hyperlink Style="{StaticResource InlineLink}" Click="Donate_Click" ToolTip="{SLoc TechInspector_AskDonateTip, 'Ko-fi opens in your browser.'}"><Run Text="{SLoc TechInspector_AskDonate, 'donating'}" /></Hyperlink>
+                    <Hyperlink Style="{StaticResource InlineLink}" Click="Donate_Click" ToolTip="{SLoc TechInspector_AskDonateTip, 'Ko-fi opens in your browser.'}"><Run Text="{SLoc TechInspector_AskDonate, 'a small donation'}" /></Hyperlink>
                 </TextBlock>
                 <TextBlock Text="{SLoc TechInspector_AskOr, 'or'}" Style="{StaticResource Muted}" VerticalAlignment="Center" Margin="4,0,4,0" />
                 <TextBlock FontSize="12.5" VerticalAlignment="Center">
-                    <Hyperlink Style="{StaticResource InlineLink}" Click="Shop_Click" ToolTip="simpaticosims.com"><Run Text="{SLoc TechInspector_AskShop, 'visiting the shop'}" /></Hyperlink>
+                    <Hyperlink Style="{StaticResource InlineLink}" Click="Shop_Click" ToolTip="simpaticosims.com"><Run Text="{SLoc TechInspector_AskShop, 'a visit to the shop'}" /></Hyperlink>
                 </TextBlock>
             </StackPanel>
         </DockPanel>
