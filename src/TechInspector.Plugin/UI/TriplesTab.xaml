@@ -98,7 +98,7 @@
             </Grid>
 
             <!-- The saved layout, compared with the file. -->
-            <styles:SHExpander x:Name="GuardExpander" Margin="0,6,0,0">
+            <styles:SHExpander x:Name="GuardExpander" Margin="0,6,0,0" ui:InstantCollapse.Enabled="True">
                 <styles:SHExpander.Header>
                     <DockPanel LastChildFill="False">
                         <TextBlock DockPanel.Dock="Left" Text="Saved layout" FontSize="14" VerticalAlignment="Center" />

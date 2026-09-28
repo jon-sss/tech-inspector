@@ -16,6 +16,9 @@ namespace TechInspector.Plugin
         public bool ShowExpert { get; set; }
         public bool ShowIniLines { get; set; }
 
+        /// <summary>Settings the user pinned, by id (file|section|key), in the order they were pinned.</summary>
+        public List<string> PinnedIds { get; set; } = new List<string>();
+
         /// <summary>Settings the user hid, by id (file|section|key).</summary>
         public HashSet<string> HiddenIds { get; set; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 

@@ -117,7 +117,7 @@
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="52" />
+                    <ColumnDefinition Width="80" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
@@ -140,7 +140,12 @@
                     </StackPanel>
                 </StackPanel>
 
-                <StackPanel x:Name="Actions" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Opacity="0">
+                <!-- The pin stays in sight once pinned; reset and hide show on hover or focus. -->
+                <Button x:Name="PinButton" Grid.Column="1" Style="{StaticResource RowAction}" Click="Pin_Click" ToolTip="{Binding PinTip}" HorizontalAlignment="Right" VerticalAlignment="Center"
+                        Margin="0,0,10,0" Opacity="0" AutomationProperties.Name="{Binding PinTip}">
+                    <iconpacks:PackIconMaterial x:Name="PinIcon" Kind="PinOutline" Width="15" Height="15" Opacity="0.8" />
+                </Button>
+                <StackPanel x:Name="Actions" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Opacity="0" Margin="0,0,38,0">
                     <Button Style="{StaticResource RowAction}" Click="Reset_Click" ToolTip="{Binding ResetTip}" Visibility="{Binding CanReset, Converter={StaticResource Visible}}" AutomationProperties.Name="Reset to default">
                         <iconpacks:PackIconMaterial Kind="Restore" Width="15" Height="15" Opacity="0.8" />
                     </Button>
@@ -158,8 +163,9 @@
                 <DataTrigger Binding="{Binding Marker}" Value="Changed"><Setter TargetName="MarkChanged" Property="Visibility" Value="Visible" /></DataTrigger>
                 <DataTrigger Binding="{Binding Marker}" Value="Unusual"><Setter TargetName="MarkUnusual" Property="Visibility" Value="Visible" /></DataTrigger>
                 <DataTrigger Binding="{Binding IsInert}" Value="True"><Setter TargetName="LabelText" Property="Opacity" Value="0.45" /></DataTrigger>
-                <Trigger SourceName="RowRoot" Property="IsMouseOver" Value="True"><Setter TargetName="Actions" Property="Opacity" Value="1" /></Trigger>
-                <Trigger SourceName="RowRoot" Property="IsKeyboardFocusWithin" Value="True"><Setter TargetName="Actions" Property="Opacity" Value="1" /></Trigger>
+                <Trigger SourceName="RowRoot" Property="IsMouseOver" Value="True"><Setter TargetName="Actions" Property="Opacity" Value="1" /><Setter TargetName="PinButton" Property="Opacity" Value="1" /></Trigger>
+                <Trigger SourceName="RowRoot" Property="IsKeyboardFocusWithin" Value="True"><Setter TargetName="Actions" Property="Opacity" Value="1" /><Setter TargetName="PinButton" Property="Opacity" Value="1" /></Trigger>
+                <DataTrigger Binding="{Binding IsPinned}" Value="True"><Setter TargetName="PinButton" Property="Opacity" Value="1" /><Setter TargetName="PinIcon" Property="Kind" Value="Pin" /><Setter TargetName="PinIcon" Property="Foreground" Value="{DynamicResource AccentColorBrush}" /><Setter TargetName="PinIcon" Property="Opacity" Value="1" /></DataTrigger>
             </DataTemplate.Triggers>
         </DataTemplate>
         </ResourceDictionary>
@@ -267,8 +273,14 @@
                     <StackPanel Visibility="{Binding ShowingGoal, Converter={StaticResource Visible}}">
                         <TextBlock Text="{Binding Goal.Title}" FontSize="19" Margin="0,0,0,3" />
                         <TextBlock Text="{Binding Goal.Summary}" Style="{StaticResource Muted}" FontSize="13" />
-                        <Border Style="{StaticResource Card}" Margin="0,16,0,0" Padding="18,2,16,2">
+                        <Border Style="{StaticResource Card}" Margin="0,16,0,0" Padding="18,2,16,2" Visibility="{Binding Goal.HasRows, Converter={StaticResource Visible}}">
                             <ItemsControl ItemsSource="{Binding Goal.Rows}" Focusable="False" />
+                        </Border>
+                        <Border Style="{StaticResource Card}" Margin="0,16,0,0" Visibility="{Binding Goal.HasRows, Converter={StaticResource Hidden}}">
+                            <StackPanel Orientation="Horizontal">
+                                <iconpacks:PackIconMaterial Kind="PinOutline" Width="16" Height="16" Opacity="0.6" Margin="0,1,12,0" VerticalAlignment="Top" />
+                                <TextBlock Text="{Binding Goal.EmptyText}" Style="{StaticResource Muted}" FontSize="13" />
+                            </StackPanel>
                         </Border>
                         <StackPanel Orientation="Horizontal" Margin="2,12,0,0" Visibility="{Binding Goal.HasSections, Converter={StaticResource Visible}}">
                             <TextBlock Text="Everything in" Style="{StaticResource Muted}" VerticalAlignment="Center" Margin="0,0,8,0" />
@@ -302,7 +314,7 @@
                                         <ItemsControl ItemsSource="{Binding Cards}" Focusable="False">
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
-                                                    <styles:SHExpander IsExpanded="{Binding IsExpanded, Mode=TwoWay}" Margin="0,0,0,6">
+                                                    <styles:SHExpander IsExpanded="{Binding IsExpanded, Mode=TwoWay}" Margin="0,0,0,6" ui:InstantCollapse.Enabled="True">
                                                         <styles:SHExpander.Header>
                                                             <DockPanel LastChildFill="False">
                                                                 <TextBlock DockPanel.Dock="Left" Text="{Binding Name}" FontSize="14" VerticalAlignment="Center" />

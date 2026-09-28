@@ -98,6 +98,49 @@ namespace TechInspector.Plugin.UI
     }
 
     /// <summary>Enter commits a text box's value; Escape puts back the value it had.</summary>
+    /// <summary>
+    /// Closes a SimHub expander at once. Its template fades the body out over 250 ms and keeps it
+    /// in the layout until the fade ends, which leaves an empty gap that feels like lag. The fade
+    /// holds Visibility and Opacity, so this takes the body's height to zero instead, which the
+    /// animation doesn't touch; opening restores it and keeps SimHub's fade-in.
+    /// </summary>
+    public static class InstantCollapse
+    {
+        private static readonly string[] Parts = { "ExpandSite", "BottomSpacer" };
+
+        public static readonly DependencyProperty EnabledProperty = DependencyProperty.RegisterAttached(
+            "Enabled", typeof(bool), typeof(InstantCollapse), new PropertyMetadata(false, OnEnabledChanged));
+
+        public static bool GetEnabled(DependencyObject d) => (bool)d.GetValue(EnabledProperty);
+        public static void SetEnabled(DependencyObject d, bool value) => d.SetValue(EnabledProperty, value);
+
+        private static void OnEnabledChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (!(d is System.Windows.Controls.Expander x)) return;
+            x.Collapsed -= Collapse;
+            x.Expanded -= Expand;
+            if (!(bool)e.NewValue) return;
+            x.Collapsed += Collapse;
+            x.Expanded += Expand;
+        }
+
+        private static void Collapse(object sender, RoutedEventArgs e) => SetBodyHeight(sender, e, 0);
+        private static void Expand(object sender, RoutedEventArgs e) => SetBodyHeight(sender, e, null);
+
+        private static void SetBodyHeight(object sender, RoutedEventArgs e, double? height)
+        {
+            if (!ReferenceEquals(e.OriginalSource, sender)) return;   // a nested expander opening or closing
+            var x = (System.Windows.Controls.Expander)sender;
+            if (x.Template == null) return;
+            foreach (var name in Parts)
+            {
+                if (!(x.Template.FindName(name, x) is FrameworkElement part)) continue;
+                if (height.HasValue) { part.Height = height.Value; part.ClipToBounds = true; }   // the fading body can't draw past it
+                else { part.ClearValue(FrameworkElement.HeightProperty); part.ClearValue(UIElement.ClipToBoundsProperty); }
+            }
+        }
+    }
+
     public static class CommitOnEnter
     {
         public static readonly DependencyProperty EnabledProperty =

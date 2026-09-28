@@ -139,6 +139,7 @@ namespace TechInspector.Plugin.UI
         private void ShowMore_Click(object sender, RoutedEventArgs e) => Page.ShowMore = true;
         private void Reset_Click(object sender, RoutedEventArgs e) => Page.Reset(Item<SettingRow>(sender));
         private void Hide_Click(object sender, RoutedEventArgs e) { Page.Hide(Item<SettingRow>(sender)); _ws.Plugin.SaveSettings(); }
+        private void Pin_Click(object sender, RoutedEventArgs e) { Page.TogglePin(Item<SettingRow>(sender)); _ws.Plugin.SaveSettings(); }
 
         /// <summary>
         /// The View menu: the three ways to see more, then the files themselves. Kept out of the

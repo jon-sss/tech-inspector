@@ -50,7 +50,7 @@ namespace TechInspector.Plugin.UI
             if (folder == null) { Page = null; Reloaded?.Invoke(this, EventArgs.Empty); return; }
             var old = Page;
             var session = SettingsSession.Load(folder, Plugin.Settings.RendererFile, Plugin.Catalog, Plugin.Settings.IgnoredValues);
-            var page = new SettingsPage(session, Plugin.Settings.HiddenIds, Plugin.Goals) { ConfirmDanger = (r, v) => ConfirmDanger?.Invoke(r, v) ?? Task.FromResult(true) };
+            var page = new SettingsPage(session, Plugin.Settings.HiddenIds, Plugin.Goals, Plugin.Settings.PinnedIds) { ConfirmDanger = (r, v) => ConfirmDanger?.Invoke(r, v) ?? Task.FromResult(true) };
             page.TabRequested += tab => TabRequested?.Invoke(tab);
             page.CopyViewFrom(old);
             if (keepDrafts && old != null)

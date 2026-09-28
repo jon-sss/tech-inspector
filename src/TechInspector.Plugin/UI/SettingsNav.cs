@@ -40,20 +40,26 @@ namespace TechInspector.Plugin.UI
     /// <summary>A common fix: a goal with its handful of settings.</summary>
     public sealed class GoalNav : NavItem
     {
+        private List<SettingRow> _rows;
+        private List<SectionLink> _sections;
+
         public GoalNav(GoalDef goal, List<SettingRow> rows, List<SectionLink> sections)
         {
-            Goal = goal; Rows = rows; Sections = sections;
+            Goal = goal; _rows = rows; _sections = sections;
             Key = "goal:" + goal.Id; Title = goal.Title;
             if (goal.Tab != null) Mark = NavMark.Link;
         }
 
         public GoalDef Goal { get; }
         public string Summary => Goal.Summary;
-        public List<SettingRow> Rows { get; }
-        /// <summary>The full sections these settings come from, for "In full".</summary>
-        public List<SectionLink> Sections { get; }
-        public bool HasSections => Sections.Count > 0;
+        public List<SettingRow> Rows { get => _rows; set { _rows = value; Raise(nameof(Rows)); Raise(nameof(HasRows)); Raise(nameof(Summary)); } }
+        public bool HasRows => _rows.Count > 0;
+        /// <summary>The full sections these settings come from, for "Everything in".</summary>
+        public List<SectionLink> Sections { get => _sections; set { _sections = value; Raise(nameof(Sections)); Raise(nameof(HasSections)); } }
+        public bool HasSections => _sections.Count > 0;
         public string Tab => Goal.Tab;
+        /// <summary>What the pane says when there's nothing in it (only Pinned can be empty).</summary>
+        public string EmptyText => "Nothing pinned yet. Hover a setting anywhere on this tab and select its pin to keep it here.";
     }
 
     /// <summary>A browsable list: every setting, or one of the filters.</summary>
@@ -88,9 +94,14 @@ namespace TechInspector.Plugin.UI
 
         private ListNav AllNav => _nav.OfType<ListNav>().First(n => n.Filter == FilterAll);
 
+        private GoalNav _pinnedNav;
+
         private void BuildNav(IEnumerable<GoalDef> goals)
         {
-            var nav = new List<NavItem> { new NavHeading("Common fixes", first: true) };
+            // Pinned leads the rail: the user's own list, always there so it can be found before it has anything.
+            _pinnedNav = new GoalNav(new GoalDef { Id = "pinned", Title = "Pinned", Summary = "The settings you pinned, in the order you pinned them." },
+                                     new List<SettingRow>(), new List<SectionLink>());
+            var nav = new List<NavItem> { _pinnedNav, new NavHeading("Common fixes") };
             foreach (var g in goals ?? Enumerable.Empty<GoalDef>())
             {
                 var rows = g.Resolve(Session).Where(s => _rows.ContainsKey(s.Id)).Select(s => _rows[s.Id]).ToList();
@@ -105,7 +116,9 @@ namespace TechInspector.Plugin.UI
             nav.Add(new ListNav(FilterInert, "No effect right now", false));
             nav.Add(new ListNav(FilterIniOnly, "Not in iRacing's options", true));
             _nav = nav;
-            _selected = nav.OfType<GoalNav>().FirstOrDefault(n => n.Tab == null) ?? (NavItem)AllNav;
+            RefreshPinned();
+            _selected = _pinnedNav.HasRows ? _pinnedNav
+                      : nav.OfType<GoalNav>().FirstOrDefault(n => n.Tab == null && n != _pinnedNav) ?? (NavItem)AllNav;
         }
 
         /// <summary>The rail selection. A goal shows its settings; a list shows the matching sections.</summary>
@@ -154,11 +167,23 @@ namespace TechInspector.Plugin.UI
         }
 
         /// <summary>Recounts the rail: marks on the common fixes, counts on the lists.</summary>
+        /// <summary>Pinned's rows, from the saved ids that exist in the loaded files.</summary>
+        private void RefreshPinned()
+        {
+            var rows = _pinned.Where(_rows.ContainsKey).Select(id => _rows[id]).ToList();
+            _pinnedNav.Rows = rows;
+            _pinnedNav.Sections = rows.Select(r => r.Setting.SectionInfo).Distinct().Select(i => new SectionLink { Info = i }).ToList();
+            _pinnedNav.CountText = rows.Count > 0 ? rows.Count.ToString(System.Globalization.CultureInfo.InvariantCulture) : null;
+        }
+
         private void RefreshNav()
         {
+            RefreshPinned();
             foreach (var n in _nav)
             {
-                if (n is GoalNav g && g.Tab == null)
+                if (n == _pinnedNav)
+                    n.Mark = _pinnedNav.Rows.Any(r => r.Setting.IsChanged) ? NavMark.Changed : _pinnedNav.Rows.Any(r => r.Setting.IsUnusual) ? NavMark.Unusual : NavMark.None;
+                else if (n is GoalNav g && g.Tab == null)
                 {
                     g.Mark = g.Rows.Any(r => r.Setting.IsChanged) ? NavMark.Changed : g.Rows.Any(r => r.Setting.IsUnusual) ? NavMark.Unusual : NavMark.Tick;
                 }

@@ -44,6 +44,7 @@ namespace TechInspector.Plugin.UI
             {
                 if (!Set(ref _expanded, value)) return;
                 _page.Expanded[Info.Key] = value;
+                if (value) _page.CloseOthers(this);   // one section open at a time
                 _page.FillCard(this);
             }
         }
@@ -64,14 +65,16 @@ namespace TechInspector.Plugin.UI
         private readonly Dictionary<string, SettingRow> _rows = new Dictionary<string, SettingRow>();
         private readonly HashSet<string> _moreOpen = new HashSet<string>();
         private readonly ISet<string> _hidden;
+        private readonly List<string> _pinned;
         private string _query = "", _filter = FilterAll, _summary;
         private bool _showMore, _showExpert, _showIniLines;
         private List<AreaGroup> _areas = new List<AreaGroup>();
 
-        public SettingsPage(SettingsSession session, ISet<string> hidden, IEnumerable<Core.Catalog.GoalDef> goals = null)
+        public SettingsPage(SettingsSession session, ISet<string> hidden, IEnumerable<Core.Catalog.GoalDef> goals = null, List<string> pinned = null)
         {
             Session = session;
             _hidden = hidden;
+            _pinned = pinned ?? new List<string>();
             foreach (var s in session.Settings) _rows[s.Id] = new SettingRow(this, s);
             BuildNav(goals);
         }
@@ -256,7 +259,7 @@ namespace TechInspector.Plugin.UI
             if (s.IsExpert) { _showExpert = true; Raise(nameof(ShowExpert)); }
             if (s.Tier == "more") _moreOpen.Add(s.SectionInfo.Key);
             _hidden.Remove(s.Id);
-            Expanded[s.SectionInfo.Key] = true;
+            OpenOnly(s.SectionInfo.Key);
             Rebuild();
         }
 
@@ -275,6 +278,31 @@ namespace TechInspector.Plugin.UI
         }
 
         public void Hide(SettingRow row) { _hidden.Add(row.Setting.Id); Rebuild(); }
+
+        /// <summary>Closes every other open section, so one is open at a time.</summary>
+        internal void CloseOthers(SectionCard open)
+        {
+            foreach (var card in Areas.SelectMany(a => a.Cards).Where(c => c != open && c.IsExpanded).ToList())
+                card.IsExpanded = false;
+            foreach (var key in Expanded.Keys.Where(k => k != open.Info.Key).ToList()) Expanded[key] = false;
+        }
+
+        /// <summary>Marks one section as the open one before a rebuild.</summary>
+        internal void OpenOnly(string key)
+        {
+            foreach (var k in Expanded.Keys.ToList()) Expanded[k] = false;
+            Expanded[key] = true;
+        }
+
+        public bool IsPinned(Setting s) => _pinned.Contains(s.Id);
+
+        /// <summary>Pins or unpins a setting. Pinned settings collect under Pinned, in pin order.</summary>
+        public void TogglePin(SettingRow row)
+        {
+            if (!_pinned.Remove(row.Setting.Id)) _pinned.Add(row.Setting.Id);
+            row.Refresh();
+            RefreshNav();
+        }
 
         /// <summary>Applies a pending value, asking first for dangerous changes. Refreshes the rows it can affect.</summary>
         public async void Change(SettingRow row, string value)

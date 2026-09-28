@@ -466,6 +466,7 @@ namespace TechInspector.Plugin.UI
                     IsExpanded = _moreOpen,
                     Margin = new Thickness(0, 0, 0, 8),
                 };
+                InstantCollapse.SetEnabled(expander, true);
                 expander.Expanded += (s, e) => _moreOpen = true;
                 expander.Collapsed += (s, e) => _moreOpen = false;
                 ControlCards.Items.Add(expander);

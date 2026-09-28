@@ -30,6 +30,8 @@ namespace TechInspector.Plugin.UI
 
         public Setting Setting { get; }
         public string Label => Setting.Label;
+        public bool IsPinned => _page.IsPinned(Setting);
+        public string PinTip => IsPinned ? "Unpin" : "Pin it, to find it under Pinned";
         public string Key => Setting.Key;
         public string Type => Setting.IsReadOnly ? "readonly" : Setting.Def.RequiredBySimHub ? "required" : Setting.Def.Type == "range" ? "num" : Setting.Def.Type;
 
@@ -107,9 +109,14 @@ namespace TechInspector.Plugin.UI
         public string OptionsTip => string.Join("\n", Options.Where(o => !string.IsNullOrEmpty(o.Tip)).Select(o => o.Label + ": " + o.Tip));
         public bool HasOptionsTip => Options.Any(o => !string.IsNullOrEmpty(o.Tip));
 
+        /// <summary>
+        /// The field's text. Numbers read without the file's trailing zeros ("166", not "166.000000");
+        /// a write puts them back in the file's own format.
+        /// </summary>
         public string Text
         {
-            get => Setting.Draft;
+            get => (Setting.Def.Type == "num" || Setting.Def.Type == "range") && double.TryParse(Setting.Draft, NumberStyles.Float, CultureInfo.InvariantCulture, out var n)
+                ? Setting.Format(n) : Setting.Draft;
             set => _page.Change(this, value);
         }
 
