@@ -36,5 +36,27 @@ namespace TechInspector.Plugin
 
         /// <summary>Unusual values the user accepted: id → the value accepted. Flagged again if it changes.</summary>
         public Dictionary<string, string> IgnoredValues { get; set; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>Remember iRacing's wheel strength per car, and set it again when that car is driven.</summary>
+        public bool FfbPerCar { get; set; } = true;
+
+        /// <summary>The saved wheel strength per car, as iRacing's max force in Nm, by iRacing's car path (the folder name under setups).</summary>
+        public Dictionary<string, FfbCarStrength> FfbMaxForceByCar { get; set; } = new Dictionary<string, FfbCarStrength>(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// The keys bound to iRacing's strength up and down controls, pressed by the user on the
+        /// page. Used only where the binding in controls.cfg is a key whose code can't be read.
+        /// </summary>
+        public TechInspector.Core.Ffb.KeyBinding FfbKeyUp { get; set; }
+        public TechInspector.Core.Ffb.KeyBinding FfbKeyDown { get; set; }
+    }
+
+    public class FfbCarStrength
+    {
+        /// <summary>The car's name as iRacing shows it.</summary>
+        public string Name { get; set; }
+        /// <summary>iRacing's max force in Nm.</summary>
+        public float Nm { get; set; }
+        public DateTime When { get; set; }
     }
 }

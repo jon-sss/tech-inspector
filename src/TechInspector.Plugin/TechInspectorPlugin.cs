@@ -47,6 +47,9 @@ namespace TechInspector.Plugin
         /// <summary>Backups of iRacing's files, kept in SimHub's data folder (PluginsData\Common\TechInspector\Backups).</summary>
         public BackupStore Backups { get; private set; }
 
+        /// <summary>Remembers the wheel strength per car and sets it again when that car is driven.</summary>
+        public FfbKeeper Ffb { get; private set; }
+
         private SettingsCatalog _catalog;
         /// <summary>The researched catalog, embedded in TechInspector.Core.</summary>
         public SettingsCatalog Catalog => _catalog ?? (_catalog = SettingsCatalog.LoadEmbedded());
@@ -75,6 +78,7 @@ namespace TechInspector.Plugin
             SimHub.Logging.Current.Info($"Tech Inspector {Version} starting");
             Settings = this.ReadCommonSettings("Settings", () => new PluginSettings());
             Backups = new BackupStore(pluginManager.GetCommonStoragePath("TechInspector", "Backups"));
+            Ffb = new FfbKeeper(this);
             try
             {
                 IracingFolder = IracingPaths.FindDocumentsFolder();
@@ -90,16 +94,22 @@ namespace TechInspector.Plugin
 
             this.AttachDelegate("Version", () => Version);
             this.AttachDelegate("SimRunning", () => SimRunning);
+            this.AttachDelegate("FfbStrength", () => Ffb.CurrentNm);
         }
 
-        /// <summary>On SimHub's critical path: only notes whether iRacing is running.</summary>
+        /// <summary>On SimHub's critical path: notes whether iRacing is running, and samples the wheel strength.</summary>
         public void DataUpdate(PluginManager pluginManager, ref GameData data)
         {
             bool running = data.GameRunning && string.Equals(data.GameName, "IRacing", StringComparison.OrdinalIgnoreCase);
+            if (running && Settings.FfbPerCar) Ffb.Sample(data);
             if (running == _simRunning) return;
             _simRunning = running;
             SimStateChanged?.Invoke(this, EventArgs.Empty);
-            if (!running) System.Threading.Tasks.Task.Run(AfterSimClosed);
+            if (!running)
+            {
+                Ffb.Stop();
+                System.Threading.Tasks.Task.Run(AfterSimClosed);
+            }
         }
 
         /// <summary>Raised after iRacing closed and rewrote its files, so the page reloads them.</summary>
@@ -174,9 +184,17 @@ namespace TechInspector.Plugin
             return System.IO.Directory.Exists(fallback) ? fallback : null;
         }
 
-        public void End(PluginManager pluginManager) => SaveSettings();
+        public void End(PluginManager pluginManager)
+        {
+            Ffb?.Stop();
+            SaveSettings();
+        }
 
-        public void SaveSettings() => this.SaveCommonSettings("Settings", Settings);
+        /// <summary>Locked: the wheel strength keeper saves from its own thread.</summary>
+        public void SaveSettings()
+        {
+            lock (Settings) this.SaveCommonSettings("Settings", Settings);
+        }
 
         public System.Windows.Controls.Control GetWPFSettingsControl(PluginManager pluginManager) => new UI.MainControl(this);
 

@@ -8,7 +8,7 @@ using WoteverLocalization;
 
 namespace TechInspector.Plugin.UI
 {
-    /// <summary>The plugin's page: Overview, Settings, Triple screens, Backups and About, with the changes bar under every tab.</summary>
+    /// <summary>The plugin's page: Overview, Settings, Triple screens, Force feedback, Backups and About, with the changes bar under every tab.</summary>
     public partial class MainControl : UserControl
     {
         private readonly TechInspectorPlugin _plugin;
@@ -29,6 +29,7 @@ namespace TechInspector.Plugin.UI
             {
                 T("TechInspector_Touch1", "Changes iRacing's files in Documents\\iRacing only while the sim is closed, and only when you write changes or restore a backup."),
                 T("TechInspector_Touch2", "Backs up those files before every write. Backups stay in SimHub's data folder."),
+                T("TechInspector_Touch6", "Sets the wheel strength you saved for a car by pressing your keys for iRacing's strength controls. No file is changed."),
                 T("TechInspector_Touch3", "Moves telemetry files and hand-made copies to the Recycle Bin only when you ask."),
                 T("TechInspector_Touch4", "Never changes the sim or its install folder."),
                 T("TechInspector_Touch5", "Doesn't connect to the internet. Links open in your browser only when you click them."),
@@ -59,6 +60,7 @@ namespace TechInspector.Plugin.UI
             SettingsView.Attach(_ws);
             OverviewView.Attach(_ws);
             TriplesView.Attach(_ws);
+            FfbView.Attach(_ws);
             BackupsView.Attach(_ws);
             Bar.Attach(_ws);
             UpdateVerdict();
