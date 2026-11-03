@@ -7,12 +7,14 @@ A SimHub plugin that explains, checks and edits iRacing's settings.
 - **Overview.** A health check of your setup: values that differ from iRacing's defaults or look like mistakes, an oversized telemetry folder, low disk space and more. Each finding can be ignored.
 - **Settings.** Opens on common fixes (frame rate, image quality, view, spotter and sound, night and wet, wheel, replays), each showing only the handful of settings behind it. Every setting in `app.ini`, `core.ini` and the graphics files is a click away, with a plain-language description and search.
 - **Triple screens.** A live top view of your triple-monitor layout, the ideal side-screen angle for your seating position, and a guard that puts your layout back when iRacing resets it.
+- **Force feedback.** Remembers iRacing's wheel strength per car and sets it again when you drive that car, using your keys for iRacing's strength controls.
 - **Backups.** A full backup before every change, plus ones you take yourself. Compare any backup with your current files, restore all of it or one file, and turn your hand-made copies (`rendererDX11Monitor - Copy.ini` and the like) into dated backups.
 
 ## What it touches
 
 - It changes iRacing's files in `Documents\iRacing` only while the sim is closed, and only when you write changes or restore a backup. Changes made while iRacing runs wait until it closes.
 - It backs up those files before every write. Backups are kept in SimHub's data folder, not in your iRacing folder.
+- It sets the wheel strength you saved for a car by pressing your keys for iRacing's strength controls. No file is changed.
 - It moves telemetry files and hand-made copies to the Recycle Bin only when you ask.
 - It never changes the sim or its install folder.
 - It doesn't connect to the internet. Links open in your browser only when you click them.
