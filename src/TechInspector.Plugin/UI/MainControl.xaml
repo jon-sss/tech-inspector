@@ -79,6 +79,11 @@
                 <ui:TriplesTab x:Name="TriplesView" />
             </styles:SHTabItem>
 
+            <!-- Force feedback: the wheel strength saved per car. -->
+            <styles:SHTabItem x:Name="FfbItem" Header="{SLoc TechInspector_TabFfb, 'Force feedback'}">
+                <ui:FfbTab x:Name="FfbView" />
+            </styles:SHTabItem>
+
             <!-- Backups: take one, import hand-made copies, compare and restore. -->
             <styles:SHTabItem x:Name="BackupsItem" Header="{SLoc TechInspector_TabBackups, 'Backups'}">
                 <ui:BackupsTab x:Name="BackupsView" />

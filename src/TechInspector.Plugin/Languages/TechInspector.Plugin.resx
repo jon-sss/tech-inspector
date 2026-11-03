@@ -19,6 +19,7 @@
   <data name="TechInspector_VerdictTip" xml:space="preserve"><value>Open the Overview</value></data>
   <data name="TechInspector_TabOverview" xml:space="preserve"><value>Overview</value></data>
   <data name="TechInspector_TabSettings" xml:space="preserve"><value>Settings</value></data>
+  <data name="TechInspector_TabFfb" xml:space="preserve"><value>Force feedback</value></data>
   <data name="TechInspector_TabBackups" xml:space="preserve">
     <value>Backups</value>
   </data>

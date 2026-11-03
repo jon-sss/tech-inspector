@@ -8,7 +8,7 @@ using WoteverLocalization;
 
 namespace TechInspector.Plugin.UI
 {
-    /// <summary>The plugin's page: Overview, Settings, Triple screens, Backups and About, with the changes bar under every tab.</summary>
+    /// <summary>The plugin's page: Overview, Settings, Triple screens, Force feedback, Backups and About, with the changes bar under every tab.</summary>
     public partial class MainControl : UserControl
     {
         private readonly TechInspectorPlugin _plugin;
@@ -59,6 +59,7 @@ namespace TechInspector.Plugin.UI
             SettingsView.Attach(_ws);
             OverviewView.Attach(_ws);
             TriplesView.Attach(_ws);
+            FfbView.Attach(_ws);
             BackupsView.Attach(_ws);
             Bar.Attach(_ws);
             UpdateVerdict();
